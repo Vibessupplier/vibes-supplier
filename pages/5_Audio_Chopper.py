@@ -61,8 +61,8 @@ st.markdown(
     """
     <style>
     .sample-readout { display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem; margin:.4rem 0 1rem; }
-    .sample-readout div { padding:.75rem; border:1px solid var(--line); background:rgba(16,39,27,.72); color:var(--sand); font-size:.68rem; letter-spacing:.08em; }
-    .sample-readout b { display:block; margin-top:.3rem; color:var(--lime); font-family:var(--font-technical); font-size:.95rem; letter-spacing:0; }
+    .sample-readout div { padding:.75rem; border:1px solid var(--line); border-radius:2px; background:rgba(23,24,21,.88); color:var(--sand); font-size:.68rem; letter-spacing:.08em; box-shadow:inset 0 0 0 2px rgba(0,0,0,.12); }
+    .sample-readout b { display:block; margin-top:.3rem; color:var(--amber); font-family:var(--font-technical); font-size:.95rem; letter-spacing:0; }
     </style>
     """,
     unsafe_allow_html=True,

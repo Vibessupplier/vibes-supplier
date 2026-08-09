@@ -36,9 +36,10 @@ WAVEFORM_CSS = """
     position: relative;
     overflow: hidden;
     padding: 12px 12px 8px;
-    border: 1px solid rgba(216, 195, 154, 0.20);
-    border-radius: 15px 6px 15px 6px;
-    background: rgba(8, 17, 13, 0.84);
+    border: 1px solid rgba(216, 201, 167, 0.26);
+    border-radius: 3px;
+    background: linear-gradient(180deg, rgba(119,118,107,.08), transparent 35%), #171815;
+    box-shadow: inset 0 0 0 3px rgba(0,0,0,.16);
     user-select: none;
 }
 canvas {
@@ -49,7 +50,7 @@ canvas {
     touch-action: none;
 }
 .wave-hint {
-    color: rgba(216, 195, 154, 0.58);
+    color: rgba(216, 201, 167, 0.58);
     font: 600 10px "IBM Plex Mono", monospace;
     letter-spacing: 0.10em;
     text-align: right;
@@ -60,14 +61,14 @@ canvas {
     width:30px;
     height:27px;
     padding:0;
-    border:1px solid rgba(216,195,154,.20);
-    border-radius:5px 2px 5px 2px;
-    background:rgba(16,39,27,.82);
-    color:#d8c39a;
+    border:1px solid rgba(216,201,167,.24);
+    border-radius:2px;
+    background:#1c281e;
+    color:#d8c9a7;
     font:600 14px "IBM Plex Mono",monospace;
     cursor:pointer;
 }
-.view-controls button:hover { border-color:#b8ff3d; color:#b8ff3d; }
+.view-controls button:hover { border-color:#d99a45; color:#eee3c7; }
 .wave-toolbar {
     display: flex;
     align-items: center;
@@ -77,26 +78,32 @@ canvas {
 .wave-toolbar button {
     min-height: 32px;
     padding: 0 11px;
-    border: 1px solid rgba(216,195,154,.22);
-    border-radius: 7px 3px 7px 3px;
-    background: rgba(16,39,27,.88);
-    color: #d8c39a;
-    font: 700 10px Inter, sans-serif;
+    border: 1px solid rgba(216,201,167,.24);
+    border-radius: 2px;
+    background: #1c281e;
+    color: #d8c9a7;
+    font: 700 10px "IBM Plex Sans", sans-serif;
     letter-spacing: .06em;
     cursor: pointer;
 }
-.wave-toolbar button:hover { border-color: #b8ff3d; color: #f1e9d5; }
-.wave-toolbar button.loop-active { border-color:#ffb23f; color:#ffb23f; background:rgba(255,178,63,.10); }
-.wave-toolbar button.apply { margin-left: auto; border-color: #b8ff3d; background: #b8ff3d; color: #08110d; }
+.wave-toolbar button:hover { border-color: #d99a45; color: #eee3c7; }
+.wave-toolbar button.loop-active { border-color:#d99a45; color:#d99a45; background:rgba(217,154,69,.10); }
+.wave-toolbar button.apply {
+    margin-left: auto;
+    border-color: #d8c9a7;
+    background: linear-gradient(#e4d5b3, #cdbc94);
+    color: #101a14;
+    box-shadow: 0 2px 0 #6f6149;
+}
 .wave-toolbar button.apply:active,
 .wave-toolbar button.apply.selection-applied {
-    border-color: #f1e9d5;
-    background: #f1e9d5;
-    color: #08110d;
-    box-shadow: 0 0 0 3px rgba(184,255,61,.24), 0 0 18px rgba(184,255,61,.30);
+    border-color: #d99a45;
+    background: #d99a45;
+    color: #101a14;
+    box-shadow: 0 0 0 2px rgba(217,154,69,.20), 0 2px 0 #765326;
     transform: translateY(1px);
 }
-.selection-time { color:#b8ff3d; font:600 11px "IBM Plex Mono",monospace; }
+.selection-time { color:#d99a45; font:600 11px "IBM Plex Mono",monospace; }
 audio { display:none; }
 """
 
@@ -184,21 +191,21 @@ export default function(component) {
         const width = canvas.width;
         const height = canvas.height;
         context.clearRect(0, 0, width, height);
-        context.fillStyle = '#08110d';
+        context.fillStyle = '#171815';
         context.fillRect(0, 0, width, height);
-        context.strokeStyle = 'rgba(216,195,154,.12)';
+        context.strokeStyle = 'rgba(216,201,167,.12)';
         context.beginPath();
         context.moveTo(0, height / 2);
         context.lineTo(width, height / 2);
         context.stroke();
-        drawWave(width, height, 'rgba(216,195,154,.38)');
+        drawWave(width, height, 'rgba(216,201,167,.38)');
 
         const selectedX1 = xAt(start, width);
         const selectedX2 = xAt(end, width);
-        context.fillStyle = 'rgba(31,107,69,.18)';
+        context.fillStyle = 'rgba(89,68,49,.26)';
         context.fillRect(selectedX1, 0, selectedX2 - selectedX1, height);
-        drawWave(width, height, '#b8ff3d', selectedX1, selectedX2);
-        context.strokeStyle = '#f1e9d5';
+        drawWave(width, height, '#d99a45', selectedX1, selectedX2);
+        context.strokeStyle = '#eee3c7';
         context.lineWidth = 2 * (window.devicePixelRatio || 1);
         context.beginPath();
         context.moveTo(selectedX1, 0);
@@ -209,13 +216,13 @@ export default function(component) {
 
         if (playheadTime !== null && playheadTime >= viewStart && playheadTime <= viewEnd) {
             const playheadX = xAt(playheadTime, width);
-            context.strokeStyle = '#ffb23f';
+            context.strokeStyle = '#87966c';
             context.lineWidth = 2 * (window.devicePixelRatio || 1);
             context.beginPath();
             context.moveTo(playheadX, 0);
             context.lineTo(playheadX, height);
             context.stroke();
-            context.fillStyle = '#ffb23f';
+            context.fillStyle = '#87966c';
             context.beginPath();
             context.moveTo(playheadX - 5, 0);
             context.lineTo(playheadX + 5, 0);
@@ -223,7 +230,7 @@ export default function(component) {
             context.fill();
         }
 
-        context.fillStyle = '#d8c39a';
+        context.fillStyle = '#d8c9a7';
         context.font = `${11 * (window.devicePixelRatio || 1)}px IBM Plex Mono, monospace`;
         context.fillText(viewStart.toFixed(2) + ' s', 8, height - 10);
         const endLabel = viewEnd.toFixed(2) + ' s';
@@ -391,7 +398,7 @@ export default function(component) {
 
 
 _interactive_waveform = st.components.v2.component(
-    "vibes_supplier_waveform_v4",
+    "vibes_supplier_waveform_v5",
     html=WAVEFORM_HTML,
     css=WAVEFORM_CSS,
     js=WAVEFORM_JS,
@@ -414,7 +421,7 @@ def interactive_waveform(
         }
     }
     result = _interactive_waveform(
-        key="audio_chopper_interactive_waveform_v4",
+        key="audio_chopper_interactive_waveform_v5",
         data={
             "peaks": waveform.peaks,
             "duration": waveform.duration_seconds,
