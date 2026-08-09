@@ -1,5 +1,4 @@
 from pathlib import Path
-import math
 import tempfile
 
 import streamlit as st
@@ -7,16 +6,19 @@ import streamlit as st
 from analytics import track_event, track_page_view
 from audio_analysis import detect_bpm_from_file
 from audio_effects import (
-    MAX_PITCH_SEMITONES,
     MAX_SPEED_FACTOR,
-    MIN_PITCH_SEMITONES,
-    MIN_SPEED_FACTOR,
-    calculate_speed_factor,
-    change_speed,
+    create_speed_player_audio,
     create_speed_preview,
+    change_speed,
+    resolve_speed_settings,
 )
 from audio_engine import AudioProcessingError
+from speed_player_component import live_speed_player
 from ui import show_header, show_tool_header
+
+
+SPEED_PLAYER_KEY = "speed_live_player_v1"
+PENDING_ACTION_KEY = "speed_pending_action"
 
 
 @st.cache_data(show_spinner=False)
@@ -27,12 +29,38 @@ def detect_uploaded_bpm(audio_data: bytes, suffix: str) -> float:
         input_path.write_bytes(audio_data)
         return detect_bpm_from_file(input_path)
 
+
+@st.cache_data(show_spinner=False)
+def prepare_speed_player_audio(audio_data: bytes, suffix: str) -> bytes:
+    """Cache one browser-compatible copy for uninterrupted live audition."""
+    with tempfile.TemporaryDirectory() as temp_directory:
+        input_path = Path(temp_directory) / f"input{suffix}"
+        output_path = Path(temp_directory) / "speed-player.mp3"
+        input_path.write_bytes(audio_data)
+        create_speed_player_audio(input_path, output_path)
+        return output_path.read_bytes()
+
+
+def capture_speed_action(action: str) -> None:
+    """Copy a component trigger into regular session state before rerunning."""
+    component_state = st.session_state.get(SPEED_PLAYER_KEY, {})
+    if isinstance(component_state, dict):
+        payload = component_state.get(action)
+    else:
+        payload = getattr(component_state, action, None)
+    if payload:
+        st.session_state[PENDING_ACTION_KEY] = {
+            "action": action,
+            "settings": dict(payload),
+        }
+
+
 track_page_view("speed_changer")
 show_header()
 show_tool_header(
     "Transform / 02",
     "Speed Changer",
-    "Set an exact target BPM and reshape speed and pitch with precision.",
+    "Play the track, reshape its motion live and export the final result.",
 )
 
 audio_file = st.file_uploader(
@@ -42,160 +70,140 @@ audio_file = st.file_uploader(
 )
 
 if audio_file is not None:
-    st.audio(audio_file)
-
     audio_data = audio_file.getvalue()
     suffix = Path(audio_file.name).suffix.lower()
     upload_signature = (audio_file.name, audio_file.size)
 
     if st.session_state.get("speed_upload_signature") != upload_signature:
-        with st.spinner("Detecting original BPM..."):
+        with st.spinner("Powering the live speed deck..."):
             try:
                 detected_bpm = detect_uploaded_bpm(audio_data, suffix)
-            except Exception as error:
-                st.error("The original BPM could not be detected.")
+                browser_audio = prepare_speed_player_audio(audio_data, suffix)
+            except (AudioProcessingError, OSError, ValueError) as error:
+                st.error("The live speed deck could not prepare this audio.")
                 st.code(str(error))
                 st.stop()
 
-        st.session_state["speed_source_bpm"] = round(detected_bpm, 1)
-        st.session_state.pop("speed_target_bpm", None)
+        source_bpm = round(detected_bpm, 1)
+        target_bpm = round(min(source_bpm * 1.20, source_bpm * MAX_SPEED_FACTOR), 1)
+        st.session_state["speed_browser_audio"] = browser_audio
+        st.session_state["speed_live_settings"] = {
+            "source_bpm": source_bpm,
+            "target_bpm": target_bpm,
+            "pitch_mode": "Follow speed",
+            "pitch_semitones": 0.0,
+        }
         st.session_state.pop("speed_preview", None)
         st.session_state.pop("speed_result", None)
+        st.session_state.pop(PENDING_ACTION_KEY, None)
+        st.session_state.pop(SPEED_PLAYER_KEY, None)
         st.session_state["speed_upload_signature"] = upload_signature
 
-    source_bpm = st.number_input(
-        "Original BPM",
-        min_value=40.0,
-        max_value=250.0,
-        step=0.1,
-        help="This is an estimate. Correct it if you know the exact BPM.",
-        key="speed_source_bpm",
+    pending_action = st.session_state.pop(PENDING_ACTION_KEY, None)
+    settings_error = None
+    resolved_settings = None
+    if pending_action is not None:
+        submitted = pending_action["settings"]
+        try:
+            resolved_settings = resolve_speed_settings(
+                float(submitted["source_bpm"]),
+                float(submitted["target_bpm"]),
+                str(submitted["pitch_mode"]),
+                float(submitted.get("pitch_semitones", 0.0)),
+            )
+        except (AudioProcessingError, KeyError, TypeError, ValueError) as error:
+            settings_error = str(error)
+            pending_action = None
+        else:
+            st.session_state["speed_live_settings"] = {
+                "source_bpm": resolved_settings.source_bpm,
+                "target_bpm": resolved_settings.target_bpm,
+                "pitch_mode": resolved_settings.pitch_mode,
+                "pitch_semitones": resolved_settings.pitch_semitones,
+            }
+
+    if settings_error:
+        st.error(f"The live deck returned invalid settings: {settings_error}")
+
+    live_speed_player(
+        st.session_state["speed_browser_audio"],
+        audio_id=f"{audio_file.name}:{audio_file.size}",
+        settings=st.session_state["speed_live_settings"],
+        key=SPEED_PLAYER_KEY,
+        on_preview_change=lambda: capture_speed_action("preview"),
+        on_process_change=lambda: capture_speed_action("process"),
     )
 
-    minimum_target = math.ceil(source_bpm * MIN_SPEED_FACTOR * 10) / 10
-    maximum_target = math.floor(
-        min(source_bpm * MAX_SPEED_FACTOR, 300.0) * 10
-    ) / 10
-    default_target = round(min(source_bpm * 1.20, maximum_target), 1)
-
-    current_target = st.session_state.get("speed_target_bpm")
-    if (
-        current_target is None
-        or not minimum_target <= current_target <= maximum_target
-    ):
-        st.session_state["speed_target_bpm"] = default_target
-
-    target_bpm = st.slider(
-        "Target BPM",
-        min_value=minimum_target,
-        max_value=maximum_target,
-        step=0.1,
-        key="speed_target_bpm",
-    )
-
-    speed = calculate_speed_factor(source_bpm, target_bpm)
-
-    pitch_mode = st.radio(
-        "Pitch",
-        options=["Follow speed", "Keep original", "Custom"],
-        horizontal=True,
-        help=(
-            "Follow speed changes pitch naturally. Keep original locks the key. "
-            "Custom lets you choose a pitch shift."
-        ),
-    )
-
-    if pitch_mode == "Follow speed":
-        pitch_semitones = 12 * math.log2(speed)
-        processing_pitch = None
-    elif pitch_mode == "Keep original":
-        pitch_semitones = 0.0
-        processing_pitch = 0.0
-    else:
-        pitch_semitones = st.slider(
-            "Pitch shift (semitones)",
-            min_value=MIN_PITCH_SEMITONES,
-            max_value=MAX_PITCH_SEMITONES,
-            value=0.0,
-            step=0.5,
-        )
-        processing_pitch = pitch_semitones
-
-    st.caption(f"Speed: {speed:.3f}x · Pitch: {pitch_semitones:+.1f} semitones")
-
-    settings_signature = (
-        audio_file.name,
-        audio_file.size,
-        source_bpm,
-        target_bpm,
-        pitch_mode,
-        pitch_semitones,
-    )
-    if st.session_state.get("speed_settings") != settings_signature:
-        st.session_state.pop("speed_preview", None)
+    if pending_action is not None and resolved_settings is not None:
         st.session_state.pop("speed_result", None)
-        st.session_state["speed_settings"] = settings_signature
 
-    if st.button("CREATE 20-SECOND PREVIEW", type="secondary"):
-        with st.spinner("Creating your processed preview..."):
-            try:
-                with tempfile.TemporaryDirectory() as temp_directory:
-                    input_path = Path(temp_directory) / f"input{suffix}"
-                    output_path = Path(temp_directory) / "speed-preview.mp3"
+        if pending_action["action"] == "preview":
+            if resolved_settings.pitch_mode != "Custom":
+                st.error("A rendered preview is only needed for Custom Pitch.")
+            else:
+                with st.spinner("Rendering the custom pitch preview..."):
+                    try:
+                        with tempfile.TemporaryDirectory() as temp_directory:
+                            input_path = Path(temp_directory) / f"input{suffix}"
+                            output_path = Path(temp_directory) / "speed-preview.mp3"
+                            input_path.write_bytes(audio_data)
+                            create_speed_preview(
+                                input_path,
+                                output_path,
+                                speed=resolved_settings.speed,
+                                pitch_semitones=(
+                                    resolved_settings.processing_pitch_semitones
+                                ),
+                            )
+                            st.session_state["speed_preview"] = output_path.read_bytes()
+                            track_event(
+                                "audio_preview_created",
+                                {"tool": "speed_changer", "pitch_mode": "Custom"},
+                            )
+                    except (AudioProcessingError, OSError) as error:
+                        st.error("The custom pitch preview could not be created.")
+                        st.code(str(error))
 
-                    input_path.write_bytes(audio_data)
-                    create_speed_preview(
-                        input_path,
-                        output_path,
-                        speed=speed,
-                        pitch_semitones=processing_pitch,
-                    )
-                    st.session_state["speed_preview"] = output_path.read_bytes()
-                    track_event(
-                        "audio_preview_created",
-                        {"tool": "speed_changer", "pitch_mode": pitch_mode},
-                    )
-            except (AudioProcessingError, OSError) as error:
-                st.error("The processed preview could not be created.")
-                st.code(str(error))
+        elif pending_action["action"] == "process":
+            st.session_state.pop("speed_preview", None)
+            with st.spinner("Changing speed with the selected settings..."):
+                try:
+                    with tempfile.TemporaryDirectory() as temp_directory:
+                        input_path = Path(temp_directory) / f"input{suffix}"
+                        output_path = Path(temp_directory) / "speed-changed.mp3"
+                        input_path.write_bytes(audio_data)
+                        change_speed(
+                            input_path,
+                            output_path,
+                            speed=resolved_settings.speed,
+                            pitch_semitones=(
+                                resolved_settings.processing_pitch_semitones
+                            ),
+                        )
+                        st.session_state["speed_result"] = {
+                            "audio": output_path.read_bytes(),
+                            "filename": (
+                                f"{Path(audio_file.name).stem}_speed-changed.mp3"
+                            ),
+                            "source_bpm": resolved_settings.source_bpm,
+                            "target_bpm": resolved_settings.target_bpm,
+                            "pitch_semitones": resolved_settings.pitch_semitones,
+                        }
+                        track_event(
+                            "audio_processing_completed",
+                            {
+                                "tool": "speed_changer",
+                                "pitch_mode": resolved_settings.pitch_mode,
+                            },
+                        )
+                except (AudioProcessingError, OSError) as error:
+                    st.error("The speed-changed version could not be created.")
+                    st.code(str(error))
 
     preview = st.session_state.get("speed_preview")
     if preview is not None:
-        st.write("**Processed preview (up to 20 seconds)**")
+        st.write("**Rendered Custom Pitch preview (up to 20 seconds)**")
         st.audio(preview, format="audio/mpeg")
-
-    if st.button("CHANGE SPEED", type="primary"):
-        with st.spinner("Changing your track's speed..."):
-            try:
-                with tempfile.TemporaryDirectory() as temp_directory:
-                    input_path = Path(temp_directory) / f"input{suffix}"
-                    output_path = Path(temp_directory) / "speed-changed.mp3"
-
-                    input_path.write_bytes(audio_data)
-                    change_speed(
-                        input_path,
-                        output_path,
-                        speed=speed,
-                        pitch_semitones=processing_pitch,
-                    )
-
-                    st.session_state["speed_result"] = {
-                        "audio": output_path.read_bytes(),
-                        "filename": (
-                            f"{Path(audio_file.name).stem}_speed-changed.mp3"
-                        ),
-                        "source_bpm": source_bpm,
-                        "target_bpm": target_bpm,
-                        "pitch_semitones": pitch_semitones,
-                    }
-                    track_event(
-                        "audio_processing_completed",
-                        {"tool": "speed_changer", "pitch_mode": pitch_mode},
-                    )
-
-            except (AudioProcessingError, OSError) as error:
-                st.error("The speed-changed version could not be created.")
-                st.code(str(error))
 
     result = st.session_state.get("speed_result")
     if result is not None:

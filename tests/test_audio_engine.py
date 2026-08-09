@@ -12,7 +12,9 @@ from audio_effects import (
     SPEED_PREVIEW_SECONDS,
     calculate_speed_factor,
     change_speed,
+    create_speed_player_audio,
     create_speed_preview,
+    resolve_speed_settings,
 )
 from audio_engine import (
     AudioProcessingError,
@@ -30,6 +32,33 @@ class AudioEffectsTest(unittest.TestCase):
     def test_accepts_slowest_and_fastest_speed_limits(self):
         self.assertEqual(calculate_speed_factor(120.0, 60.0), 0.50)
         self.assertEqual(calculate_speed_factor(120.0, 240.0), 2.00)
+
+    def test_resolves_live_speed_modes(self):
+        follow = resolve_speed_settings(120.0, 150.0, "Follow speed")
+        locked = resolve_speed_settings(120.0, 150.0, "Keep original")
+        custom = resolve_speed_settings(120.0, 150.0, "Custom", -2.5)
+
+        self.assertAlmostEqual(follow.speed, 1.25)
+        self.assertIsNone(follow.processing_pitch_semitones)
+        self.assertEqual(locked.processing_pitch_semitones, 0.0)
+        self.assertEqual(custom.processing_pitch_semitones, -2.5)
+
+    def test_rejects_untrusted_live_speed_settings(self):
+        with self.assertRaises(AudioProcessingError):
+            resolve_speed_settings(120.0, 400.0, "Follow speed")
+        with self.assertRaises(AudioProcessingError):
+            resolve_speed_settings(120.0, 150.0, "Custom", 13.0)
+
+    @patch("audio_effects.transform_audio")
+    def test_creates_browser_player_copy(self, transform_audio_mock):
+        source = Path("source.wav")
+        output = Path("player.mp3")
+        transform_audio_mock.return_value = output
+
+        result = create_speed_player_audio(source, output)
+
+        self.assertEqual(result, output)
+        transform_audio_mock.assert_called_once_with(source, output)
 
     @patch("audio_effects.transform_audio")
     def test_preview_uses_selected_processing_and_20_second_limit(
