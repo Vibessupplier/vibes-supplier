@@ -69,6 +69,17 @@
 - Keep public feedback account-free and rate-limited. Submit only the category,
   rating, and message the visitor intentionally provides; never attach audio or
   filename metadata automatically.
+- Load the shared Jungle Tech design once in `app.py`, immediately after
+  `st.set_page_config`. Individual pages must not call `load_design()` again.
+- Keep the lightweight Jungle Tech CSS separate from large embedded artwork so
+  typography and controls can render before the background image is decoded.
+- Streamlit Cloud's authenticated static-asset route proved unreliable for CSS
+  backgrounds. The current background and home hero are embedded as data URIs
+  from versioned files in `static/`; do not switch them back to public URLs
+  without verifying the deployed application.
+- Version the Streamlit v2 waveform component name and key when its browser-side
+  HTML, CSS, or JavaScript changes. This prevents a deployed browser from
+  retaining an older component bundle.
 
 ## Current application structure
 
@@ -85,6 +96,7 @@
 - `analytics.py`: optional privacy-conscious product-event tracking.
 - `feedback.py`: feedback validation, delivery, and public contact settings.
 - `ui.py`: shared Streamlit presentation helpers.
+- `static/`: versioned Jungle Tech background and homepage hero artwork.
 - `pages/`: independent Streamlit tool pages.
 - `tests/`: automated tests.
 - `requirements.txt`: Python dependencies for local and cloud environments.
@@ -109,6 +121,13 @@
   required Debian packages belong in `packages.txt`.
 - A successful local test does not replace checking the Streamlit deployment
   logs and the published user flow after pushing.
+- Streamlit Community Cloud can continue displaying the previous deployment
+  until its new build is ready. Reboot only after checking that `main` contains
+  the intended commit, and use a hard browser refresh when validating visual or
+  JavaScript component changes.
+- Large embedded artwork must be injected after the lightweight global CSS. A
+  brief Jungle Black/Deep Forest loading state is acceptable; flashing the old
+  neon/default interface is not.
 
 ## Near-term direction
 
@@ -121,13 +140,55 @@
 - Keep pitch and tempo processing reusable so future focused, SEO-friendly tool
   pages can share the same engine without duplicating logic.
 - Audio Chopper Beta provides a high-resolution interactive waveform, direct
-  range selection, browser-side zoom/navigation, synchronized playhead, Loop
-  Selection, optional processed preview, and MP3 export. Browser interaction
-  must reuse the existing trimming engine rather than duplicate final export
-  processing inside the component.
+  range selection, mouse-wheel and button zoom, horizontal navigation buttons,
+  synchronized playhead, Loop Selection, visible Use Selection confirmation,
+  optional processed preview, and MP3 export. Browser interaction must reuse the
+  existing trimming engine rather than duplicate final export processing inside
+  the component.
 - The Mastering Analyzer now provides LUFS, dBFS/true peak, dynamics, stereo
   measurements, mono compatibility, A/B reference comparison, Volume Match,
   and static spectral balance. Keep it distinct from any future AI Mastering
   product.
 - Defer accounts, subscriptions, billing, and persistent user files until their
   product and infrastructure requirements are designed.
+
+## Current handoff state
+
+- Public navigation is grouped into HOME, ANALYZE, TRANSFORM, SEPARATE, and
+  SUPPORT. The live tools are Key & BPM Finder, Speed Changer, Mastering
+  Analyzer, Audio Chopper Beta, and Feedback.
+- The shared visual direction is "Jungle Tech": Jungle Black/Deep Forest
+  surfaces, Bone/Sand typography, restrained Acid Lime interactions, occasional
+  Mango accents, and dark tropical artwork. Avoid generic cyberpunk, gaming,
+  tourist/Hawaiian, and generic black-blue SaaS styling.
+- The provisional old cyan neon wordmark is no longer the desired identity.
+  The homepage hero and compact editorial `VIBES SUPPLIER` header are the current
+  direction, while the product name itself remains provisional.
+- Commit `0de0746` introduced two-stage visual loading: lightweight shared CSS
+  first and the embedded jungle background second. Its purpose is to prevent the
+  previous interface from flashing during reloads. Confirm this behavior on the
+  deployed site before beginning a broad new feature.
+- The Audio Chopper component currently uses the v4 component name/key. Its
+  fixed height is 330 px so the accessible arrow and plus/minus controls are not
+  clipped on Streamlit Cloud.
+- Vocal Split's 20-second Modal preview was quality-validated, but public use is
+  paused because isolated requests were approximately $0.017-$0.020 with the
+  current idle window. `ECONOMY.md` contains the assumptions and benchmarks.
+- PostHog is configured through Streamlit secrets and currently records page
+  views plus explicit feedback submissions. Analytics must remain optional and
+  must never receive audio, filenames, raw cookies, or location data.
+- The public feedback contact is `vibes.supplier@gmail.com`.
+- The current automated suite contains 44 tests and passes with
+  `.venv/bin/python -m unittest discover -s tests -q`. The local virtual
+  environment does not currently include pytest.
+
+## Recommended next session
+
+1. Verify the latest deployed visual loading behavior, Audio Chopper controls,
+   and Use Selection confirmation on the public Streamlit URL.
+2. If the old interface still flashes, diagnose Streamlit's retained DOM/loading
+   behavior as a focused visual issue; do not undo the working Jungle Tech theme.
+3. Choose one product increment: direct waveform drag-to-pan, live Mastering
+   Analyzer visuals, or public-beta preparation and user testing.
+4. Keep the increment small, run the 44-test suite, run syntax and diff checks,
+   commit, push to `main`, and verify the deployed flow.

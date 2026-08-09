@@ -10,6 +10,11 @@
 - [x] Multipage navigation
 - [x] Initial dark UI
 - [x] Neon logo
+- [x] Replace the provisional neon identity with the Jungle Tech visual system
+- [x] Jungle Tech homepage and tool-family navigation
+- [x] Shared typography, sidebar, cards, controls, and responsive styling
+- [x] Dark tropical background and homepage hero artwork
+- [x] Load shared styling before page content to reduce old-theme flashes
 
 ---
 
@@ -46,6 +51,8 @@
 ## Version 0.4
 - [x] Privacy-conscious PostHog page and product-event analytics
 - [x] Public Feedback page with rating, category, message, and contact email
+- [x] International-facing presentation without Barcelona/location references
+- [x] Public contact address: vibes.supplier@gmail.com
 - [ ] Producer accounts
 - [ ] Monthly subscription with processing credits
 - [ ] Free Vocal Split previews
@@ -78,6 +85,7 @@
 - [x] Optional non-destructive Volume Match for reference listening
 - [ ] Configurable mastering reference ranges
 - [x] Static spectral balance visualization and A/B comparison
+- [x] Label Sub, Bass, Low Mid, Mid, High Mid, and High frequency ranges
 - [ ] Custom synchronized audio player for the Mastering Analyzer
 - [ ] Interactive waveform and spectrogram with clickable playhead
 - [ ] Live peak, RMS, momentary LUFS, and short-term LUFS meters
@@ -93,10 +101,38 @@
 - [x] Export user-selected samples in MP3
 - [x] JavaScript/Web Audio waveform component with direct drag selection
 - [x] Mouse-wheel zoom and horizontal navigation without Streamlit reruns
+- [x] Accessible zoom and horizontal navigation buttons for trackpads and touch users
 - [x] Synchronized playhead and infinite Loop Selection mode
+- [x] Visible confirmation when applying a waveform selection
 - [ ] Direct drag-to-pan waveform navigation
 - [ ] Premium WAV and FLAC sample export
 - [ ] Multi-stem separation (vocals, drums, bass, and other)
 - [ ] Spectrogram
 - [ ] AI Mix Assistant
 - [ ] AI Mastering
+
+---
+
+## Next Product Increments
+
+- [ ] Validate the latest two-stage Jungle Tech loading fix on Streamlit Cloud
+- [ ] Test the complete public flow on desktop and mobile
+- [ ] Add Audio Chopper direct drag-to-pan navigation
+- [ ] Design the live Mastering Analyzer Web Audio component
+- [ ] Benchmark Modal with full three-minute MP3 and WAV tracks
+- [ ] Define free and Premium usage limits from measured processing costs
+- [ ] Prepare a small external beta and review PostHog and Feedback results
+
+## Current Public Beta State
+
+- Home, Key & BPM Finder, Speed Changer, Mastering Analyzer, Audio Chopper, and
+  Feedback are available through the sidebar.
+- Vocal Split works with a high-quality private Modal/Demucs pipeline, but its
+  public processing action is intentionally disabled while cost and access
+  controls are designed.
+- Audio Chopper Beta has direct waveform selection, wheel and button zoom,
+  horizontal navigation, synchronized playback, looping, selection feedback,
+  processed preview, and MP3 export.
+- PostHog receives privacy-conscious page views and explicit feedback events.
+- The application deploys automatically from `main` to Streamlit Community
+  Cloud; a reboot is sometimes required before a new build becomes visible.
