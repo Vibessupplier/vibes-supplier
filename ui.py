@@ -32,6 +32,7 @@ def load_design() -> None:
             --font-interface: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             --font-display: "Space Grotesk", "Inter", sans-serif;
             --font-technical: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+            --jungle-background: none;
         }
 
         html, body, [class*="css"] {
@@ -48,7 +49,7 @@ def load_design() -> None:
             background-image:
                 linear-gradient(rgba(8, 17, 13, 0.16), rgba(8, 17, 13, 0.42)),
                 radial-gradient(circle at 50% 32%, transparent 0 18rem, rgba(8, 17, 13, 0.12) 44rem),
-                url("__JUNGLE_BACKGROUND__");
+                var(--jungle-background);
             background-position: center top;
             background-repeat: no-repeat;
             background-size: cover;
@@ -178,7 +179,7 @@ def load_design() -> None:
         [data-testid="stSidebar"] {
             background:
                 linear-gradient(rgba(8, 17, 13, 0.91), rgba(8, 17, 13, 0.97)),
-                url("__JUNGLE_BACKGROUND__") left top / auto 100% fixed,
+                var(--jungle-background) left top / auto 100% fixed,
                 var(--jungle-black);
             border-right: 1px solid var(--line);
             box-shadow: 12px 0 40px rgba(8, 17, 13, 0.28);
@@ -524,11 +525,16 @@ def load_design() -> None:
         }
         </style>
         """
+    # Apply the lightweight visual system before sending the large background
+    # asset, preventing Streamlit's previous interface from flashing on reruns.
+    st.markdown(design, unsafe_allow_html=True)
+    jungle_background = _asset_data_uri("jungle-tech-background.png")
     st.markdown(
-        design.replace(
-            "__JUNGLE_BACKGROUND__",
-            _asset_data_uri("jungle-tech-background.png"),
-        ),
+        f"""
+        <style>
+        :root {{ --jungle-background: url("{jungle_background}"); }}
+        </style>
+        """,
         unsafe_allow_html=True,
     )
 
