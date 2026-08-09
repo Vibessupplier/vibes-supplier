@@ -15,6 +15,7 @@ from mastering_analysis import (
     calculate_volume_match_gains,
     create_volume_matched_audio,
 )
+from mastering_monitor_component import live_mastering_monitor
 from ui import show_header, show_tool_header
 
 
@@ -503,8 +504,6 @@ audio_file = st.file_uploader(
 )
 
 if audio_file is not None:
-    st.audio(audio_file)
-
     audio_data = audio_file.getvalue()
     suffix = Path(audio_file.name).suffix.lower()
     upload_signature = ("spectral-v1", audio_file.name, audio_file.size)
@@ -517,6 +516,13 @@ if audio_file is not None:
     st.caption(
         f"{audio_file.name} · {suffix.removeprefix('.').upper()} · "
         f"{size_megabytes:.1f} MB"
+    )
+
+    live_mastering_monitor(
+        audio_data,
+        audio_mime_type(audio_file.name),
+        audio_id=f"{audio_file.name}:{audio_file.size}",
+        key=f"mastering_live_monitor_v6_{audio_file.name}_{audio_file.size}",
     )
 
     if st.button("ANALYZE MASTER", type="primary"):
