@@ -377,7 +377,7 @@ export default function(component) {
 
 
 _interactive_waveform = st.components.v2.component(
-    "vibes_supplier_waveform_v2",
+    "vibes_supplier_waveform_v3",
     html=WAVEFORM_HTML,
     css=WAVEFORM_CSS,
     js=WAVEFORM_JS,
@@ -400,7 +400,7 @@ def interactive_waveform(
         }
     }
     result = _interactive_waveform(
-        key="audio_chopper_interactive_waveform_v2",
+        key="audio_chopper_interactive_waveform_v3",
         data={
             "peaks": waveform.peaks,
             "duration": waveform.duration_seconds,
@@ -412,7 +412,7 @@ def interactive_waveform(
             ),
         },
         default=default,
-        height=260,
+        height=330,
         on_selection_change=lambda: None,
     )
     value: Any = getattr(result, "selection", None)
