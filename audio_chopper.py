@@ -1,9 +1,13 @@
 """Reusable waveform and sample extraction for the Audio Chopper."""
 
 from dataclasses import dataclass
+from io import BytesIO
 import math
 from pathlib import Path
+import re
 import tempfile
+from typing import Sequence
+from zipfile import ZIP_STORED, ZipFile
 
 import numpy as np
 import soundfile as sf
@@ -14,6 +18,8 @@ from audio_engine import AudioProcessingError, transform_audio
 WAVEFORM_POINTS = 12_000
 CHOPPER_PREVIEW_SECONDS = 30.0
 MIN_CLIP_SECONDS = 0.1
+SAMPLE_TRAY_LIMIT = 4
+PRO_SAMPLE_LIMIT = 10
 
 
 class AudioChopperError(RuntimeError):
@@ -139,3 +145,40 @@ def create_audio_clip(
         )
     except AudioProcessingError as error:
         raise AudioChopperError(str(error)) from error
+
+
+def safe_sample_filename(name: str, fallback_index: int) -> str:
+    """Return a short, archive-safe MP3 filename for a saved sample."""
+    cleaned = Path(str(name).strip()).stem
+    cleaned = re.sub(r"[^\w -]+", "", cleaned, flags=re.UNICODE)
+    cleaned = re.sub(r"[\s_-]+", "_", cleaned).strip("_")[:64]
+    if not cleaned:
+        cleaned = f"sample_{fallback_index:02d}"
+    return f"{cleaned}.mp3"
+
+
+def build_sample_archive(samples: Sequence[tuple[str, bytes]]) -> bytes:
+    """Package saved MP3 samples into a deterministic in-memory ZIP archive."""
+    if not samples:
+        raise AudioChopperError("At least one saved sample is required.")
+    if len(samples) > PRO_SAMPLE_LIMIT:
+        raise AudioChopperError(
+            f"A sample archive can contain at most {PRO_SAMPLE_LIMIT} files."
+        )
+
+    archive_buffer = BytesIO()
+    used_names: set[str] = set()
+    with ZipFile(archive_buffer, "w", compression=ZIP_STORED) as archive:
+        for index, (name, audio_data) in enumerate(samples, start=1):
+            if not isinstance(audio_data, bytes) or not audio_data:
+                raise AudioChopperError("Saved samples must contain MP3 audio data.")
+            filename = safe_sample_filename(name, index)
+            stem = Path(filename).stem
+            candidate = filename
+            duplicate_index = 2
+            while candidate.casefold() in used_names:
+                candidate = f"{stem}_{duplicate_index:02d}.mp3"
+                duplicate_index += 1
+            used_names.add(candidate.casefold())
+            archive.writestr(candidate, audio_data)
+    return archive_buffer.getvalue()

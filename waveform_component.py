@@ -249,7 +249,14 @@ export default function(component) {
         });
     }
 
+    function markSelectionDirty() {
+        applyButton.disabled = false;
+        applyButton.classList.remove('selection-applied');
+        applyButton.textContent = 'USE SELECTION';
+    }
+
     canvas.onpointerdown = (event) => {
+        markSelectionDirty();
         canvas.setPointerCapture(event.pointerId);
         const time = timeAt(event.clientX);
         const tolerance = (viewEnd - viewStart) * 0.025;
@@ -398,7 +405,7 @@ export default function(component) {
 
 
 _interactive_waveform = st.components.v2.component(
-    "vibes_supplier_waveform_v5",
+    "vibes_supplier_waveform_v6",
     html=WAVEFORM_HTML,
     css=WAVEFORM_CSS,
     js=WAVEFORM_JS,
@@ -421,7 +428,7 @@ def interactive_waveform(
         }
     }
     result = _interactive_waveform(
-        key="audio_chopper_interactive_waveform_v5",
+        key="audio_chopper_interactive_waveform_v6",
         data={
             "peaks": waveform.peaks,
             "duration": waveform.duration_seconds,

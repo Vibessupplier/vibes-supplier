@@ -7,11 +7,13 @@ from analytics import track_event, track_page_view
 from audio_chopper import (
     AudioChopperError,
     CHOPPER_PREVIEW_SECONDS,
+    SAMPLE_TRAY_LIMIT,
     WaveformData,
+    build_sample_archive,
     create_audio_clip,
     extract_waveform,
 )
-from ui import show_header, show_tool_header
+from ui import show_header, show_panel_label, show_tool_header
 from waveform_component import interactive_waveform
 
 
@@ -63,6 +65,7 @@ st.markdown(
     .sample-readout { display:grid; grid-template-columns:repeat(3,1fr); gap:.6rem; margin:.4rem 0 1rem; }
     .sample-readout div { padding:.75rem; border:1px solid var(--line); border-radius:2px; background:rgba(23,24,21,.88); color:var(--sand); font-size:.68rem; letter-spacing:.08em; box-shadow:inset 0 0 0 2px rgba(0,0,0,.12); }
     .sample-readout b { display:block; margin-top:.3rem; color:var(--amber); font-family:var(--font-technical); font-size:.95rem; letter-spacing:0; }
+    .sample-tray-count { margin:-.15rem 0 1rem; color:var(--muted); font-family:var(--font-technical); font-size:.66rem; letter-spacing:.09em; text-transform:uppercase; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -89,7 +92,8 @@ if audio_file is not None:
                 st.stop()
         st.session_state["chopper_waveform"] = waveform
         st.session_state.pop("chopper_preview", None)
-        st.session_state.pop("chopper_export", None)
+        st.session_state["chopper_samples"] = []
+        st.session_state["chopper_next_sample_id"] = 1
         st.session_state["chopper_view_window"] = (
             0.0,
             float(waveform.duration_seconds),
@@ -138,7 +142,6 @@ if audio_file is not None:
     selection_signature = (*upload_signature, start_seconds, end_seconds)
     if st.session_state.get("chopper_selection_signature") != selection_signature:
         st.session_state.pop("chopper_preview", None)
-        st.session_state.pop("chopper_export", None)
         st.session_state["chopper_selection_signature"] = selection_signature
 
     st.markdown(
@@ -156,11 +159,24 @@ if audio_file is not None:
         "only when the range is ready for preview or export."
     )
 
-    preview_column, export_column = st.columns(2)
+    saved_samples = st.session_state.setdefault("chopper_samples", [])
+    tray_is_full = len(saved_samples) >= SAMPLE_TRAY_LIMIT
+
+    preview_column, save_column = st.columns(2)
     with preview_column:
         create_preview = st.button("PREVIEW SELECTION", type="secondary")
-    with export_column:
-        export_sample = st.button("CUT SAMPLE", type="primary")
+    with save_column:
+        save_sample = st.button(
+            "SAVE SAMPLE",
+            type="primary",
+            disabled=tray_is_full,
+            help=(
+                f"The sample tray holds {SAMPLE_TRAY_LIMIT} samples. "
+                "Remove one to save another."
+                if tray_is_full
+                else "Cut this selection and add it to the sample tray."
+            ),
+        )
 
     if create_preview:
         with st.spinner("Preparing the selected preview..."):
@@ -183,8 +199,8 @@ if audio_file is not None:
                 st.error("The selected preview could not be created.")
                 st.code(str(error))
 
-    if export_sample:
-        with st.spinner("Cutting your sample..."):
+    if save_sample:
+        with st.spinner("Saving the selection to your sample tray..."):
             try:
                 with tempfile.TemporaryDirectory() as temp_directory:
                     input_path = Path(temp_directory) / f"source{suffix}"
@@ -197,10 +213,24 @@ if audio_file is not None:
                         end_seconds,
                         waveform.duration_seconds,
                     )
-                    st.session_state["chopper_export"] = output_path.read_bytes()
-                    track_event("audio_processing_completed", {"tool": "audio_chopper"})
+                    sample_id = st.session_state.get("chopper_next_sample_id", 1)
+                    saved_samples.append(
+                        {
+                            "id": sample_id,
+                            "name": f"sample_{sample_id:02d}",
+                            "audio": output_path.read_bytes(),
+                            "start": start_seconds,
+                            "end": end_seconds,
+                        }
+                    )
+                    st.session_state["chopper_next_sample_id"] = sample_id + 1
+                    st.session_state.pop("chopper_preview", None)
+                    track_event(
+                        "audio_processing_completed",
+                        {"tool": "audio_chopper", "destination": "sample_tray"},
+                    )
             except (AudioChopperError, OSError) as error:
-                st.error("The sample could not be cut.")
+                st.error("The sample could not be saved.")
                 st.code(str(error))
 
     preview = st.session_state.get("chopper_preview")
@@ -208,20 +238,65 @@ if audio_file is not None:
         st.write("**Selected preview (up to 30 seconds)**")
         st.audio(preview, format="audio/mpeg")
 
-    sample = st.session_state.get("chopper_export")
-    if sample is not None:
-        st.success("Your sample is ready.")
-        st.audio(sample, format="audio/mpeg")
-        st.download_button(
-            "DOWNLOAD SAMPLE MP3",
-            data=sample,
-            file_name=f"{Path(audio_file.name).stem}_sample.mp3",
-            mime="audio/mpeg",
-            on_click=track_event,
-            args=("audio_downloaded", {"tool": "audio_chopper", "format": "mp3"}),
+    if saved_samples:
+        show_panel_label("TRAY 02", "SAVED SAMPLES", "LOADED")
+        st.markdown(
+            f'<div class="sample-tray-count">{len(saved_samples)} / '
+            f'{SAMPLE_TRAY_LIMIT} sample slots loaded</div>',
+            unsafe_allow_html=True,
         )
+
+        for position, sample in enumerate(list(saved_samples), start=1):
+            with st.container(border=True):
+                name_column, delete_column = st.columns([4, 1])
+                with name_column:
+                    updated_name = st.text_input(
+                        f"Sample {position} name",
+                        value=sample["name"],
+                        key=f"chopper_sample_name_{sample['id']}",
+                    )
+                    sample["name"] = updated_name
+                with delete_column:
+                    st.write("")
+                    if st.button(
+                        "REMOVE",
+                        key=f"chopper_remove_sample_{sample['id']}",
+                        type="secondary",
+                    ):
+                        saved_samples.remove(sample)
+                        st.rerun()
+                st.caption(
+                    f"{format_time(sample['start'])} — "
+                    f"{format_time(sample['end'])} · "
+                    f"{sample['end'] - sample['start']:.1f} seconds"
+                )
+                st.audio(sample["audio"], format="audio/mpeg")
+
+        try:
+            archive_data = build_sample_archive(
+                [(sample["name"], sample["audio"]) for sample in saved_samples]
+            )
+        except AudioChopperError as error:
+            st.error(str(error))
+        else:
+            st.download_button(
+                "DOWNLOAD ALL SAMPLES",
+                data=archive_data,
+                file_name=f"{Path(audio_file.name).stem}_samples.zip",
+                mime="application/zip",
+                on_click=track_event,
+                args=(
+                    "audio_downloaded",
+                    {"tool": "audio_chopper", "format": "zip"},
+                ),
+            )
+
+        if tray_is_full:
+            st.info(
+                "Your sample tray is full. Remove a sample to cut another."
+            )
 
     st.caption(
         "The highlighted waveform is the selected range. Preview is limited "
-        "to 30 seconds; Cut Sample exports the complete selection."
+        "to 30 seconds; Save Sample adds the complete selection to your tray."
     )
