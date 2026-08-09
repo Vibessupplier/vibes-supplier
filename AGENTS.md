@@ -23,6 +23,8 @@
   would damage maintainability, UX, security, SEO, or future scalability.
 - Work in small, verifiable increments: objective, small change, test, commit,
   push.
+- Never commit or push visual or functional changes until the product owner has
+  reviewed them locally and explicitly authorizes the commit or push.
 - Finish and verify one feature before starting another.
 - Prefer sessions that end with a visible, working product improvement.
 - Prefer a durable design over a quick workaround.
@@ -50,28 +52,38 @@
 - The Audio Chopper uses a reusable JavaScript/Web Audio component for direct
   selection, mouse-wheel zoom/navigation, synchronized playback, and looping
   without Streamlit reruns. Keep final trimming and export authoritative on
-  the Python/FFmpeg side; direct drag-to-pan remains a future enhancement.
-- Build the future Mastering Analyzer as a focused Analyze tool. Keep LUFS,
+  the Python/FFmpeg side. Saved clips live only in the temporary four-slot
+  Sample Tray and download together as a ZIP; direct drag-to-pan remains a
+  future enhancement.
+- The Mastering Analyzer is a focused Analyze tool. Keep LUFS,
   peak/true-peak, dynamic-range, stereo-width, phase-correlation, and mono
   compatibility measurements in reusable analysis modules rather than the page.
 - Present mastering measurements with their units, measurement method, and
   limitations. Do not reduce mastering quality to a single unexplained score.
 - Keep A/B comparison measurements based on the original uploaded masters.
   Volume Match may alter temporary listening copies only and must be optional.
-- Build future live Mastering Analyzer visuals as a reusable browser-side audio
-  player component backed by the Web Audio API. Streamlit reruns must not drive
-  real-time meters or playback synchronization.
-- Keep the browser player responsible for waveform, spectrogram, playhead, and
-  responsive live meters. Keep FFmpeg analysis as the authoritative source for
-  final LUFS, peak, and mastering-report measurements.
+- The single-master flow uses a reusable browser-side Web Audio player for its
+  waveform, playhead, spectrum, Peak/RMS meters, stereo measurements, response
+  speed, and Mono Check. Streamlit reruns must not drive live meters or playback
+  synchronization. Extending this monitor to synchronized A/B remains future
+  work.
+- Treat live browser measurements as responsive listening context, not final
+  report values. Keep FFmpeg analysis authoritative for integrated LUFS, true
+  peak, dynamics, static stereo/spectral measurements, and the final mastering
+  report. A future spectrogram and live short-term/momentary LUFS must state
+  their method and limitations.
+- The Speed Changer uses a reusable browser-side Live Speed Deck for waveform,
+  playback, live BPM/speed changes, Follow Speed, and Keep Original Pitch.
+  Custom Pitch uses an accessible analog knob; its accurate 20-second preview
+  and all final exports remain authoritative on Python/FFmpeg.
 - Keep product analytics centralized and optional. Never send uploaded audio,
   filenames, raw cookies, IP addresses, or other unnecessary personal data.
 - Keep public feedback account-free and rate-limited. Submit only the category,
   rating, and message the visitor intentionally provides; never attach audio or
   filename metadata automatically.
-- Load the shared Jungle Tech design once in `app.py`, immediately after
+- Load the shared Jungle Analog design once in `app.py`, immediately after
   `st.set_page_config`. Individual pages must not call `load_design()` again.
-- Keep the lightweight Jungle Tech CSS separate from large embedded artwork so
+- Keep the lightweight Jungle Analog CSS separate from large embedded artwork so
   typography and controls can render before the background image is decoded.
 - Streamlit Cloud's authenticated static-asset route proved unreliable for CSS
   backgrounds. The current background and home hero are embedded as data URIs
@@ -80,6 +92,8 @@
 - Version the Streamlit v2 waveform component name and key when its browser-side
   HTML, CSS, or JavaScript changes. This prevents a deployed browser from
   retaining an older component bundle.
+- Apply the same name/key versioning rule to the Speed Deck and Mastering
+  Monitor whenever their HTML, CSS, or JavaScript changes.
 
 ## Current application structure
 
@@ -89,14 +103,18 @@
 - `audio_effects.py`: reusable product-level audio transformations.
 - `audio_chopper.py`: waveform extraction and selected-fragment export.
 - `waveform_component.py`: browser-side interactive waveform and playback.
+- `speed_player_component.py`: browser-side live Speed Changer deck and analog
+  pitch controls.
 - `mastering_analysis.py`: loudness, stereo, and static spectral analysis.
+- `mastering_monitor_component.py`: browser-side live mastering player,
+  spectrum, meters, stereo readouts, and Mono Check.
 - `stem_separation.py`: product-level local and cloud vocal separation.
 - `cloud_stem_separation.py`: private Modal vocal separation client.
 - `modal_vocal_split_server.py`: private zero-retention Modal GPU server.
 - `analytics.py`: optional privacy-conscious product-event tracking.
 - `feedback.py`: feedback validation, delivery, and public contact settings.
 - `ui.py`: shared Streamlit presentation helpers.
-- `static/`: versioned Jungle Tech background and homepage hero artwork.
+- `static/`: versioned jungle background and homepage bird/laboratory artwork.
 - `pages/`: independent Streamlit tool pages.
 - `tests/`: automated tests.
 - `requirements.txt`: Python dependencies for local and cloud environments.
@@ -134,7 +152,9 @@
 - Nightcore-style and Slowed-style transformations are now modes of the shared
   Speed Changer rather than separate duplicated processing engines.
 - The Speed Changer supports exact target BPM, pitch following speed, preserved
-  original pitch, and independent pitch adjustment.
+  original pitch, independent pitch adjustment, and live browser audition. Keep
+  the rendered server preview only for Custom Pitch, where browser playback
+  cannot accurately reproduce independent pitch and tempo processing.
 - Vocal Split supports a selectable local 20-second preview, and its private
   Modal GPU processing service is being connected to the application.
 - Keep pitch and tempo processing reusable so future focused, SEO-friendly tool
@@ -142,13 +162,20 @@
 - Audio Chopper Beta provides a high-resolution interactive waveform, direct
   range selection, mouse-wheel and button zoom, horizontal navigation buttons,
   synchronized playhead, Loop Selection, visible Use Selection confirmation,
-  optional processed preview, and MP3 export. Browser interaction must reuse the
-  existing trimming engine rather than duplicate final export processing inside
-  the component.
+  optional processed preview, reusable selections, and a temporary four-slot
+  Sample Tray with rename, playback, removal, and ZIP download. Browser
+  interaction must reuse the existing trimming engine rather than duplicate
+  final export processing inside the component.
 - The Mastering Analyzer now provides LUFS, dBFS/true peak, dynamics, stereo
   measurements, mono compatibility, A/B reference comparison, Volume Match,
-  and static spectral balance. Keep it distinct from any future AI Mastering
-  product.
+  static spectral balance, and a live single-master Web Audio monitor. The live
+  monitor has waveform seeking, spectrum, illuminated Peak/RMS meters, stereo
+  balance/width/correlation, Mono Check, and Steady/Balanced/Fast response.
+  Keep it distinct from any future AI Mastering product.
+- Future Delay Time and Reverb Time Calculators should be focused standalone
+  tools that work instantly from BPM without an audio upload. Delay must include
+  straight, dotted, and triplet subdivisions. Reverb timings are useful starting
+  points, not a single prescribed creative setting.
 - Defer accounts, subscriptions, billing, and persistent user files until their
   product and infrastructure requirements are designed.
 
@@ -157,20 +184,36 @@
 - Public navigation is grouped into HOME, ANALYZE, TRANSFORM, SEPARATE, and
   SUPPORT. The live tools are Key & BPM Finder, Speed Changer, Mastering
   Analyzer, Audio Chopper Beta, and Feedback.
-- The shared visual direction is "Jungle Tech": Jungle Black/Deep Forest
-  surfaces, Bone/Sand typography, restrained Acid Lime interactions, occasional
-  Mango accents, and dark tropical artwork. Avoid generic cyberpunk, gaming,
-  tourist/Hawaiian, and generic black-blue SaaS styling.
-- The provisional old cyan neon wordmark is no longer the desired identity.
-  The homepage hero and compact editorial `VIBES SUPPLIER` header are the current
-  direction, while the product name itself remains provisional.
-- Commit `0de0746` introduced two-stage visual loading: lightweight shared CSS
-  first and the embedded jungle background second. Its purpose is to prevent the
-  previous interface from flashing during reloads. Confirm this behavior on the
-  deployed site before beginning a broad new feature.
-- The Audio Chopper component currently uses the v4 component name/key. Its
+- The shared visual direction is **Jungle Analog**: a sophisticated analog audio
+  laboratory hidden in a humid jungle around 1975–1985. Use Jungle Night/Deep
+  Forest, walnut, oxidized metal, Old Paper/Warm Cream, olive/moss, and VU Amber.
+  Controls should feel tactile and equipment-inspired while remaining modern,
+  clean, responsive, and immediately understandable.
+- Acid Lime, neon borders, glow-heavy controls, glassmorphism, cyberpunk, generic
+  AI SaaS gradients, tiki/resort imagery, steampunk, and fake terminal interfaces
+  are not part of the current identity. The two neon lights already painted into
+  the original homepage bird/laboratory illustration are the only intentional
+  neon exception.
+- Preserve both original embedded artworks: the full jungle-leaf application
+  background and the homepage bird/scientist analog-laboratory hero. Do not
+  replace either with CSS-only artwork. Warm overlays may improve readability,
+  but the underlying images must remain visible.
+- Use local/system typography rather than late-loading Google Fonts to avoid a
+  font swap during initial render. The compact `VIBES SUPPLIER` and
+  `VS / AUDIO SYSTEM` equipment-label language is the current identity, while
+  the product name remains provisional.
+- Shared buttons use tactile 1980s equipment styling, physical pressed states,
+  subtle texture, and amber processing lamps. Live processing states should
+  resemble equipment powering on rather than neon software loading.
+- The Audio Chopper component currently uses the v6 component name/key. Its
   fixed height is 330 px so the accessible arrow and plus/minus controls are not
   clipped on Streamlit Cloud.
+- The Speed Changer Live Deck currently uses the v1 component name/key.
+- The Mastering Monitor currently uses the v6 component name/key. Its live
+  spectrum remains fluid while the user selects Steady, Balanced, or Fast meter
+  response. Its Peak/RMS meters use restrained black oxidation, warm glass,
+  incandescent illumination, and VU-inspired proportions while continuing to
+  report approximate digital dBFS measurements.
 - Vocal Split's 20-second Modal preview was quality-validated, but public use is
   paused because isolated requests were approximately $0.017-$0.020 with the
   current idle window. `ECONOMY.md` contains the assumptions and benchmarks.
@@ -178,17 +221,17 @@
   views plus explicit feedback submissions. Analytics must remain optional and
   must never receive audio, filenames, raw cookies, or location data.
 - The public feedback contact is `vibes.supplier@gmail.com`.
-- The current automated suite contains 44 tests and passes with
+- The current automated suite contains 50 tests and passes with
   `.venv/bin/python -m unittest discover -s tests -q`. The local virtual
   environment does not currently include pytest.
 
 ## Recommended next session
 
-1. Verify the latest deployed visual loading behavior, Audio Chopper controls,
-   and Use Selection confirmation on the public Streamlit URL.
-2. If the old interface still flashes, diagnose Streamlit's retained DOM/loading
-   behavior as a focused visual issue; do not undo the working Jungle Tech theme.
-3. Choose one product increment: direct waveform drag-to-pan, live Mastering
-   Analyzer visuals, or public-beta preparation and user testing.
-4. Keep the increment small, run the 44-test suite, run syntax and diff checks,
-   commit, push to `main`, and verify the deployed flow.
+1. Verify the deployed Jungle Analog visuals, four-slot Audio Chopper tray, Live
+   Speed Deck, and single-master VS Mastering Monitor on desktop and mobile.
+2. Choose one focused increment: Delay Time Calculator, Reverb Time Calculator
+   formula design, Mastering Monitor A/B extension, or Audio Chopper drag-to-pan.
+3. Prefer the Delay Time Calculator first: it is useful, SEO-focused, instant,
+   and has no audio-processing cost.
+4. Keep the increment small, run the 50-test suite, syntax and diff checks, then
+   wait for explicit product-owner approval before committing or pushing.

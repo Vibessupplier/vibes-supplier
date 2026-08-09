@@ -9,12 +9,14 @@
 - [x] Alternative key detection
 - [x] Multipage navigation
 - [x] Initial dark UI
-- [x] Neon logo
+- [x] Initial provisional neon logo
 - [x] Replace the provisional neon identity with the Jungle Tech visual system
 - [x] Jungle Tech homepage and tool-family navigation
 - [x] Shared typography, sidebar, cards, controls, and responsive styling
 - [x] Dark tropical background and homepage hero artwork
 - [x] Load shared styling before page content to reduce old-theme flashes
+- [x] Evolve Jungle Tech into the warm Jungle Analog visual system
+- [x] Analog equipment panels, tactile controls, amber lamps, and meters
 
 ---
 
@@ -29,9 +31,12 @@
 - [x] Independent Pitch Shifter (-12 to +12 semitones)
 - [x] Independent Tempo Changer
 - [x] MP3 export and download
-- [x] 20-second processed preview
+- [x] 20-second rendered preview for independent Custom Pitch
 - [x] Invalidate preview when speed or pitch changes
 - [x] Improve Speed Changer controls and player UI
+- [x] Live browser-side Speed Changer deck with waveform and playhead
+- [x] Audition Follow Speed and Keep Original Pitch without server previews
+- [x] Accessible analog Custom Pitch knob
 
 ---
 
@@ -86,10 +91,14 @@
 - [ ] Configurable mastering reference ranges
 - [x] Static spectral balance visualization and A/B comparison
 - [x] Label Sub, Bass, Low Mid, Mid, High Mid, and High frequency ranges
-- [ ] Custom synchronized audio player for the Mastering Analyzer
-- [ ] Interactive waveform and spectrogram with clickable playhead
-- [ ] Live peak, RMS, momentary LUFS, and short-term LUFS meters
-- [ ] Live frequency spectrum, stereo balance, and phase correlation meters
+- [x] Custom synchronized audio player for the single Mastering Analyzer
+- [x] Interactive waveform with clickable playhead
+- [ ] Live spectrogram
+- [x] Live peak and RMS meters with selectable response speed
+- [ ] Live momentary and short-term LUFS meters
+- [x] Live frequency spectrum, stereo balance, and phase correlation meters
+- [x] Browser-side Mono Check for temporary listening
+- [ ] Extend the live Mastering Monitor to synchronized A/B comparison
 - [ ] Highlight clipping and notable loudness sections on the timeline
 
 ---
@@ -104,6 +113,9 @@
 - [x] Accessible zoom and horizontal navigation buttons for trackpads and touch users
 - [x] Synchronized playhead and infinite Loop Selection mode
 - [x] Visible confirmation when applying a waveform selection
+- [x] Reusable selection after saving a sample
+- [x] Temporary four-slot sample tray with rename, preview, and remove actions
+- [x] Download all saved samples together as a ZIP
 - [ ] Direct drag-to-pan waveform navigation
 - [ ] Premium WAV and FLAC sample export
 - [ ] Multi-stem separation (vocals, drums, bass, and other)
@@ -113,12 +125,34 @@
 
 ---
 
+## Future Timing Calculators
+
+- [ ] Delay Time Calculator page
+- [ ] Convert BPM into milliseconds for whole, half, quarter, eighth, and
+  sixteenth-note delays
+- [ ] Include dotted and triplet delay subdivisions
+- [ ] Present left/right and ping-pong timing combinations without prescribing
+  a single creative setting
+- [ ] Reverb Time Calculator page
+- [ ] Convert BPM and rhythmic subdivisions into useful pre-delay starting
+  points
+- [ ] Suggest tempo-synchronized decay ranges for short, medium, and long
+  spaces
+- [ ] Explain that reverb timings are starting points shaped by arrangement,
+  genre, source material, and creative intent
+- [ ] Keep both calculators instant and browser-friendly without requiring an
+  audio upload
+
+---
+
 ## Next Product Increments
 
-- [ ] Validate the latest two-stage Jungle Tech loading fix on Streamlit Cloud
+- [ ] Validate Jungle Analog initial loading and embedded artwork on Streamlit Cloud
 - [ ] Test the complete public flow on desktop and mobile
 - [ ] Add Audio Chopper direct drag-to-pan navigation
-- [ ] Design the live Mastering Analyzer Web Audio component
+- [ ] Build the Delay Time Calculator as a focused standalone tool
+- [ ] Define and validate the Reverb Time Calculator formulas and guidance
+- [ ] Extend the live Mastering Monitor to A/B comparison
 - [ ] Benchmark Modal with full three-minute MP3 and WAV tracks
 - [ ] Define free and Premium usage limits from measured processing costs
 - [ ] Prepare a small external beta and review PostHog and Feedback results
@@ -131,8 +165,17 @@
   public processing action is intentionally disabled while cost and access
   controls are designed.
 - Audio Chopper Beta has direct waveform selection, wheel and button zoom,
-  horizontal navigation, synchronized playback, looping, selection feedback,
-  processed preview, and MP3 export.
+  horizontal navigation, synchronized playback, looping, reusable selection,
+  a temporary four-slot Sample Tray, and combined ZIP export.
+- Speed Changer has a browser-side Live Speed Deck for instant tempo audition,
+  Follow Speed, Keep Original Pitch, and an analog Custom Pitch knob. Only
+  Custom Pitch requires a rendered preview before final FFmpeg export.
+- Mastering Analyzer Single Master has a live Web Audio monitor with waveform,
+  spectrum, Mono Check, Peak/RMS meters, stereo readouts, and selectable meter
+  response. The final global report remains authoritative on FFmpeg.
+- The active art direction is Jungle Analog. The original jungle background and
+  bird/audio-laboratory hero remain core artwork; UI neon and Acid Lime were
+  replaced by warm cream, walnut, oxidized metal, olive, and VU Amber.
 - PostHog receives privacy-conscious page views and explicit feedback events.
 - The application deploys automatically from `main` to Streamlit Community
   Cloud; a reboot is sometimes required before a new build becomes visible.
