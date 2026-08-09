@@ -1,6 +1,17 @@
 """Shared Jungle Tech presentation helpers for Streamlit pages."""
 
+import base64
+from pathlib import Path
+
 import streamlit as st
+
+
+def _asset_data_uri(filename: str) -> str:
+    """Embed a visual asset without relying on Streamlit's public static route."""
+    asset_path = Path(__file__).parent / "static" / filename
+    encoded = base64.b64encode(asset_path.read_bytes()).decode("ascii")
+    return f"data:image/png;base64,{encoded}"
+
 
 def load_design() -> None:
     """Load the shared Jungle Tech visual system."""
@@ -37,7 +48,7 @@ def load_design() -> None:
             background-image:
                 linear-gradient(rgba(8, 17, 13, 0.16), rgba(8, 17, 13, 0.42)),
                 radial-gradient(circle at 50% 32%, transparent 0 18rem, rgba(8, 17, 13, 0.12) 44rem),
-                url("/app/static/jungle-tech-background.png");
+                url("__JUNGLE_BACKGROUND__");
             background-position: center top;
             background-repeat: no-repeat;
             background-size: cover;
@@ -167,7 +178,7 @@ def load_design() -> None:
         [data-testid="stSidebar"] {
             background:
                 linear-gradient(rgba(8, 17, 13, 0.91), rgba(8, 17, 13, 0.97)),
-                url("/app/static/jungle-tech-background.png") left top / auto 100% fixed,
+                url("__JUNGLE_BACKGROUND__") left top / auto 100% fixed,
                 var(--jungle-black);
             border-right: 1px solid var(--line);
             box-shadow: 12px 0 40px rgba(8, 17, 13, 0.28);
@@ -513,7 +524,13 @@ def load_design() -> None:
         }
         </style>
         """
-    st.markdown(design, unsafe_allow_html=True)
+    st.markdown(
+        design.replace(
+            "__JUNGLE_BACKGROUND__",
+            _asset_data_uri("jungle-tech-background.png"),
+        ),
+        unsafe_allow_html=True,
+    )
 
 
 def show_header() -> None:
@@ -532,6 +549,7 @@ def show_header() -> None:
 
 def show_homepage() -> None:
     """Render the Jungle Tech home hero and tool-family navigation."""
+    hero_background = _asset_data_uri("jungle-tech-home-hero.png")
     st.markdown(
         f"""
         <style>
@@ -546,7 +564,7 @@ def show_homepage() -> None:
             border-radius: 20px 7px 20px 7px;
             background-image:
                 linear-gradient(90deg, rgba(8, 17, 13, 0.34), transparent 62%),
-                url("/app/static/jungle-tech-home-hero.png");
+                url("{hero_background}");
             background-position: center;
             background-size: cover;
             box-shadow: 0 28px 80px rgba(8, 17, 13, 0.42);
