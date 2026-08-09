@@ -88,6 +88,14 @@ canvas {
 .wave-toolbar button:hover { border-color: #b8ff3d; color: #f1e9d5; }
 .wave-toolbar button.loop-active { border-color:#ffb23f; color:#ffb23f; background:rgba(255,178,63,.10); }
 .wave-toolbar button.apply { margin-left: auto; border-color: #b8ff3d; background: #b8ff3d; color: #08110d; }
+.wave-toolbar button.apply:active,
+.wave-toolbar button.apply.selection-applied {
+    border-color: #f1e9d5;
+    background: #f1e9d5;
+    color: #08110d;
+    box-shadow: 0 0 0 3px rgba(184,255,61,.24), 0 0 18px rgba(184,255,61,.30);
+    transform: translateY(1px);
+}
 .selection-time { color:#b8ff3d; font:600 11px "IBM Plex Mono",monospace; }
 audio { display:none; }
 """
@@ -337,7 +345,13 @@ export default function(component) {
         loopButton.setAttribute('aria-pressed', String(loopSelection));
         loopButton.textContent = loopSelection ? '↻ LOOP ON' : '↻ LOOP OFF';
     };
-    applyButton.onclick = () => commitSelection();
+    applyButton.onclick = () => {
+        if (applyButton.disabled) return;
+        applyButton.disabled = true;
+        applyButton.classList.add('selection-applied');
+        applyButton.textContent = '✓ SELECTION APPLIED';
+        window.setTimeout(commitSelection, 240);
+    };
     audio.ontimeupdate = () => {
         if (playingSelection && audio.currentTime >= end) {
             if (loopSelection) {
@@ -377,7 +391,7 @@ export default function(component) {
 
 
 _interactive_waveform = st.components.v2.component(
-    "vibes_supplier_waveform_v3",
+    "vibes_supplier_waveform_v4",
     html=WAVEFORM_HTML,
     css=WAVEFORM_CSS,
     js=WAVEFORM_JS,
@@ -400,7 +414,7 @@ def interactive_waveform(
         }
     }
     result = _interactive_waveform(
-        key="audio_chopper_interactive_waveform_v3",
+        key="audio_chopper_interactive_waveform_v4",
         data={
             "peaks": waveform.peaks,
             "duration": waveform.duration_seconds,
