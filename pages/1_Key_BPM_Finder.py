@@ -11,7 +11,7 @@ from audio_analysis import (
     get_bpm_options
 )
 
-from ui import show_header, show_tool_header
+from ui import show_header, show_panel_label, show_tool_header
 
 
 # -------------------------
@@ -30,6 +30,8 @@ show_tool_header(
 # -------------------------
 # AUDIO UPLOAD
 # -------------------------
+
+show_panel_label("INPUT 01", "SIGNAL IN")
 
 audio_file = st.file_uploader(
     "Upload your audio",
@@ -124,6 +126,7 @@ if audio_file is not None:
                 # RESULTS
                 # -------------------------
 
+                show_panel_label("READOUT 02", "ANALYSIS", "LOCKED")
                 st.subheader("TRACK ANALYSIS")
 
                 col1, col2, col3 = st.columns(3)
