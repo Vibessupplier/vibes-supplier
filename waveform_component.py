@@ -19,7 +19,15 @@ WAVEFORM_HTML = """
         <span class="selection-time"></span>
         <button type="button" class="apply" data-action="apply">USE SELECTION</button>
     </div>
-    <div class="wave-hint">DRAG TO SELECT · WHEEL TO ZOOM · SHIFT + WHEEL TO MOVE</div>
+    <div class="wave-footer">
+        <div class="wave-hint">DRAG TO SELECT · WHEEL TO ZOOM · SHIFT + WHEEL TO MOVE</div>
+        <div class="view-controls" aria-label="Waveform view controls">
+            <button type="button" data-action="pan-left" title="Move left">←</button>
+            <button type="button" data-action="zoom-out" title="Zoom out">−</button>
+            <button type="button" data-action="zoom-in" title="Zoom in">+</button>
+            <button type="button" data-action="pan-right" title="Move right">→</button>
+        </div>
+    </div>
 </div>
 """
 
@@ -41,12 +49,25 @@ canvas {
     touch-action: none;
 }
 .wave-hint {
-    padding-top: 7px;
     color: rgba(216, 195, 154, 0.58);
     font: 600 10px "IBM Plex Mono", monospace;
     letter-spacing: 0.10em;
     text-align: right;
 }
+.wave-footer { display:flex; align-items:center; justify-content:flex-end; gap:12px; padding-top:7px; }
+.view-controls { display:flex; gap:5px; }
+.view-controls button {
+    width:30px;
+    height:27px;
+    padding:0;
+    border:1px solid rgba(216,195,154,.20);
+    border-radius:5px 2px 5px 2px;
+    background:rgba(16,39,27,.82);
+    color:#d8c39a;
+    font:600 14px "IBM Plex Mono",monospace;
+    cursor:pointer;
+}
+.view-controls button:hover { border-color:#b8ff3d; color:#b8ff3d; }
 .wave-toolbar {
     display: flex;
     align-items: center;
@@ -82,6 +103,10 @@ export default function(component) {
     const stopButton = parentElement.querySelector('[data-action="stop"]');
     const loopButton = parentElement.querySelector('[data-action="loop"]');
     const applyButton = parentElement.querySelector('[data-action="apply"]');
+    const panLeftButton = parentElement.querySelector('[data-action="pan-left"]');
+    const panRightButton = parentElement.querySelector('[data-action="pan-right"]');
+    const zoomOutButton = parentElement.querySelector('[data-action="zoom-out"]');
+    const zoomInButton = parentElement.querySelector('[data-action="zoom-in"]');
     audio.src = data.audio_url;
     const peaks = data.peaks;
     const duration = data.duration;
@@ -269,6 +294,27 @@ export default function(component) {
         draw();
     };
 
+    function zoomView(factor) {
+        const oldSpan = viewEnd - viewStart;
+        const newSpan = clamp(oldSpan * factor, 0.25, duration);
+        const center = (start + end) / 2;
+        viewStart = clamp(center - newSpan / 2, 0, duration - newSpan);
+        viewEnd = viewStart + newSpan;
+        draw();
+    }
+
+    function panView(direction) {
+        const span = viewEnd - viewStart;
+        viewStart = clamp(viewStart + direction * span * 0.22, 0, duration - span);
+        viewEnd = viewStart + span;
+        draw();
+    }
+
+    zoomInButton.onclick = () => zoomView(0.72);
+    zoomOutButton.onclick = () => zoomView(1.38);
+    panLeftButton.onclick = () => panView(-1);
+    panRightButton.onclick = () => panView(1);
+
     playButton.onclick = () => {
         playingSelection = true;
         audio.currentTime = start;
@@ -331,7 +377,7 @@ export default function(component) {
 
 
 _interactive_waveform = st.components.v2.component(
-    "vibes_supplier_waveform",
+    "vibes_supplier_waveform_v2",
     html=WAVEFORM_HTML,
     css=WAVEFORM_CSS,
     js=WAVEFORM_JS,
@@ -354,7 +400,7 @@ def interactive_waveform(
         }
     }
     result = _interactive_waveform(
-        key="audio_chopper_interactive_waveform",
+        key="audio_chopper_interactive_waveform_v2",
         data={
             "peaks": waveform.peaks,
             "duration": waveform.duration_seconds,
