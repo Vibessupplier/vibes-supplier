@@ -447,29 +447,87 @@ def load_design() -> None:
         [data-testid="stButton"] button,
         [data-testid="stDownloadButton"] button,
         [data-testid="stFormSubmitButton"] button {
+            position: relative;
+            overflow: hidden;
             min-height: 3.25rem;
-            border: 1px solid rgba(216, 201, 167, 0.46);
-            border-radius: 3px;
+            padding-right: 2.8rem;
+            border: 1px solid rgba(119, 118, 107, 0.72);
+            border-radius: 2px;
             font-size: 0.82rem;
             font-weight: 850;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            transition: transform 150ms ease, box-shadow 150ms ease, background 150ms ease;
+            transition: transform 90ms ease, box-shadow 120ms ease, border-color 120ms ease, filter 120ms ease;
             font-family: var(--font-interface);
+        }
+
+        [data-testid="stButton"] button::before,
+        [data-testid="stDownloadButton"] button::before,
+        [data-testid="stFormSubmitButton"] button::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            opacity: .34;
+            background:
+                repeating-linear-gradient(96deg, transparent 0 3px, rgba(255,255,255,.045) 3px 4px),
+                repeating-linear-gradient(2deg, transparent 0 6px, rgba(23,24,21,.05) 6px 7px);
+            mix-blend-mode: soft-light;
+        }
+
+        [data-testid="stButton"] button::after,
+        [data-testid="stDownloadButton"] button::after,
+        [data-testid="stFormSubmitButton"] button::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            width: .48rem;
+            height: .48rem;
+            border: 1px solid rgba(23,24,21,.54);
+            border-radius: 50%;
+            background: #806a47;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,.18), 0 1px 2px rgba(0,0,0,.40);
+            transform: translateY(-50%);
+            transition: background 120ms ease, box-shadow 120ms ease;
         }
 
         [data-testid="stButton"] button[kind="primary"],
         [data-testid="stDownloadButton"] button,
         [data-testid="stFormSubmitButton"] button {
-            background: linear-gradient(#e4d5b3, #cdbc94);
+            background:
+                linear-gradient(180deg, rgba(255,255,255,.18), transparent 18%),
+                linear-gradient(180deg, #e4d5b3 0%, #cdbc94 74%, #b8a984 100%);
             color: var(--jungle-black);
-            box-shadow: 0 3px 0 #6f6149, 0 8px 18px rgba(0, 0, 0, 0.18);
+            text-shadow: 0 1px rgba(255,255,255,.28);
+            box-shadow:
+                inset 0 1px 0 rgba(255,255,255,.34),
+                inset 0 -1px 0 rgba(48,37,27,.28),
+                0 4px 0 #6f6149,
+                0 9px 18px rgba(0,0,0,.20);
+        }
+
+        [data-testid="stButton"] button[kind="primary"]::after,
+        [data-testid="stDownloadButton"] button::after,
+        [data-testid="stFormSubmitButton"] button::after {
+            background: var(--amber);
+            box-shadow:
+                inset 0 1px 1px rgba(255,255,255,.40),
+                0 0 5px rgba(217,154,69,.38),
+                0 1px 2px rgba(0,0,0,.34);
         }
 
         [data-testid="stButton"] button[kind="secondary"] {
-            background: rgba(16, 39, 27, 0.84);
+            background:
+                linear-gradient(180deg, rgba(238,227,199,.055), transparent 22%),
+                linear-gradient(180deg, #263128, #19221b);
             color: var(--bone);
-            box-shadow: inset 0 1px 0 rgba(241, 233, 213, 0.04);
+            text-shadow: 0 1px 1px rgba(0,0,0,.55);
+            box-shadow:
+                inset 0 1px 0 rgba(238,227,199,.08),
+                inset 0 -1px 0 rgba(0,0,0,.42),
+                0 4px 0 #0b100c,
+                0 8px 16px rgba(0,0,0,.18);
         }
 
         [data-testid="stButton"] button p,
@@ -482,16 +540,41 @@ def load_design() -> None:
         [data-testid="stButton"] button:hover,
         [data-testid="stDownloadButton"] button:hover,
         [data-testid="stFormSubmitButton"] button:hover {
-            border-color: var(--bone);
+            border-color: rgba(217,154,69,.72);
             transform: translateY(-1px);
-            box-shadow: 0 2px 0 #6f6149, 0 7px 16px rgba(0, 0, 0, 0.22);
+            filter: brightness(1.035);
+        }
+
+        [data-testid="stButton"] button:hover::after,
+        [data-testid="stDownloadButton"] button:hover::after,
+        [data-testid="stFormSubmitButton"] button:hover::after {
+            background: var(--amber);
+            box-shadow: 0 0 7px rgba(217,154,69,.48), 0 1px 2px rgba(0,0,0,.34);
+        }
+
+        [data-testid="stButton"] button:active,
+        [data-testid="stDownloadButton"] button:active,
+        [data-testid="stFormSubmitButton"] button:active {
+            transform: translateY(3px);
+            box-shadow:
+                inset 0 2px 4px rgba(0,0,0,.24),
+                0 1px 0 #5d513d,
+                0 3px 7px rgba(0,0,0,.18);
         }
 
         [data-testid="stButton"] button:focus:not(:active),
         [data-testid="stDownloadButton"] button:focus:not(:active),
         [data-testid="stFormSubmitButton"] button:focus:not(:active) {
-            border-color: var(--bone);
+            border-color: var(--amber);
             box-shadow: 0 0 0 3px rgba(217, 154, 69, 0.28);
+        }
+
+        [data-testid="stButton"] button:disabled,
+        [data-testid="stDownloadButton"] button:disabled,
+        [data-testid="stFormSubmitButton"] button:disabled {
+            filter: saturate(.35) brightness(.72);
+            cursor: not-allowed;
+            transform: none;
         }
 
         /* Results, players and states */
@@ -554,8 +637,60 @@ def load_design() -> None:
             color: var(--amber);
         }
 
+        [data-testid="stSpinner"] {
+            position: relative;
+            min-height: 3.25rem;
+            margin: .65rem 0;
+            padding: .78rem 1rem .78rem 2.7rem;
+            border: 1px solid rgba(217,154,69,.40);
+            border-radius: 2px;
+            background:
+                linear-gradient(90deg, rgba(217,154,69,.10), transparent 48%),
+                repeating-linear-gradient(0deg, transparent 0 4px, rgba(238,227,199,.018) 4px 5px),
+                rgba(23,24,21,.94);
+            box-shadow:
+                inset 0 0 0 3px rgba(0,0,0,.16),
+                inset 0 0 18px rgba(217,154,69,.035),
+                0 6px 18px rgba(0,0,0,.14);
+            animation: vs-machine-panel 1.8s ease-in-out infinite;
+        }
+
+        [data-testid="stSpinner"]::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 1rem;
+            width: .58rem;
+            height: .58rem;
+            border: 1px solid rgba(238,227,199,.28);
+            border-radius: 50%;
+            background: var(--amber);
+            box-shadow: 0 0 8px rgba(217,154,69,.52);
+            transform: translateY(-50%);
+            animation: vs-machine-lamp 1s ease-in-out infinite;
+        }
+
         [data-testid="stSpinner"] > div {
             border-top-color: var(--amber) !important;
+        }
+
+        [data-testid="stSpinner"] p {
+            color: var(--bone) !important;
+            font-family: var(--font-technical) !important;
+            font-size: .70rem !important;
+            font-weight: 600 !important;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        @keyframes vs-machine-lamp {
+            0%, 100% { opacity: .62; box-shadow: 0 0 4px rgba(217,154,69,.28); }
+            50% { opacity: 1; box-shadow: 0 0 10px rgba(217,154,69,.62); }
+        }
+
+        @keyframes vs-machine-panel {
+            0%, 100% { border-color: rgba(217,154,69,.32); }
+            50% { border-color: rgba(217,154,69,.52); }
         }
 
         code, pre {
@@ -637,6 +772,7 @@ def load_design() -> None:
             *, *::before, *::after {
                 scroll-behavior: auto !important;
                 transition: none !important;
+                animation: none !important;
             }
         }
         </style>
