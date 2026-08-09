@@ -263,6 +263,25 @@ def load_design() -> None:
             box-shadow: inset 0 1px 0 rgba(241, 233, 213, 0.03);
         }
 
+        [data-testid="stTextArea"] textarea {
+            border: 1px solid var(--line) !important;
+            border-radius: 11px 5px 11px 5px !important;
+            background: rgba(16, 39, 27, 0.82) !important;
+            color: var(--bone) !important;
+            caret-color: var(--lime);
+            box-shadow: inset 0 1px 0 rgba(241, 233, 213, 0.03);
+        }
+
+        [data-testid="stTextArea"] textarea::placeholder {
+            color: rgba(216, 195, 154, 0.48) !important;
+        }
+
+        [data-testid="stTextArea"] textarea:focus {
+            border-color: rgba(184, 255, 61, 0.72) !important;
+            box-shadow: 0 0 0 2px rgba(184, 255, 61, 0.10) !important;
+            outline: none !important;
+        }
+
         [data-baseweb="input"] > div:focus-within,
         [data-testid="stNumberInputContainer"] > div:focus-within {
             border-color: rgba(184, 255, 61, 0.72) !important;
@@ -358,7 +377,8 @@ def load_design() -> None:
 
         /* Actions */
         [data-testid="stButton"] button,
-        [data-testid="stDownloadButton"] button {
+        [data-testid="stDownloadButton"] button,
+        [data-testid="stFormSubmitButton"] button {
             min-height: 3.25rem;
             border: 1px solid var(--lime);
             border-radius: 10px 4px 10px 4px;
@@ -371,7 +391,8 @@ def load_design() -> None:
         }
 
         [data-testid="stButton"] button[kind="primary"],
-        [data-testid="stDownloadButton"] button {
+        [data-testid="stDownloadButton"] button,
+        [data-testid="stFormSubmitButton"] button {
             background: var(--lime);
             color: var(--jungle-black);
             box-shadow: 0 6px 22px rgba(184, 255, 61, 0.10);
@@ -384,20 +405,23 @@ def load_design() -> None:
         }
 
         [data-testid="stButton"] button p,
-        [data-testid="stDownloadButton"] button p {
+        [data-testid="stDownloadButton"] button p,
+        [data-testid="stFormSubmitButton"] button p {
             color: inherit !important;
             font-weight: inherit !important;
         }
 
         [data-testid="stButton"] button:hover,
-        [data-testid="stDownloadButton"] button:hover {
+        [data-testid="stDownloadButton"] button:hover,
+        [data-testid="stFormSubmitButton"] button:hover {
             border-color: var(--bone);
             transform: translateY(-1px);
             box-shadow: 0 8px 26px rgba(184, 255, 61, 0.18);
         }
 
         [data-testid="stButton"] button:focus:not(:active),
-        [data-testid="stDownloadButton"] button:focus:not(:active) {
+        [data-testid="stDownloadButton"] button:focus:not(:active),
+        [data-testid="stFormSubmitButton"] button:focus:not(:active) {
             border-color: var(--bone);
             box-shadow: 0 0 0 3px rgba(184, 255, 61, 0.28);
         }

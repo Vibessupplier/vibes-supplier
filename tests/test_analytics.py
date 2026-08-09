@@ -5,6 +5,30 @@ import analytics
 
 
 class AnalyticsTest(unittest.TestCase):
+    @patch("analytics._post_event", return_value=True)
+    @patch("analytics._distinct_id", return_value="browser_test")
+    @patch(
+        "analytics._configuration",
+        return_value=("phc_test", "https://eu.i.posthog.com"),
+    )
+    def test_sends_confirmed_event_immediately(
+        self,
+        configuration_mock,
+        distinct_id_mock,
+        post_event_mock,
+    ):
+        delivered = analytics.send_event_now(
+            "feedback_submitted",
+            {"rating": 5},
+        )
+
+        self.assertTrue(delivered)
+        url, payload = post_event_mock.call_args.args
+        self.assertEqual(url, "https://eu.i.posthog.com/capture/")
+        self.assertEqual(payload["event"], "feedback_submitted")
+        self.assertEqual(payload["properties"]["rating"], 5)
+        self.assertTrue(payload["properties"]["$geoip_disable"])
+
     @patch("analytics.threading.Thread")
     @patch("analytics._distinct_id", return_value="browser_test")
     @patch(

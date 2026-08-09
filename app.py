@@ -47,6 +47,13 @@ pages = {
             url_path="vocal-split",
         ),
     ],
+    "SUPPORT": [
+        st.Page(
+            "pages/6_Feedback.py",
+            title="Feedback",
+            url_path="feedback",
+        ),
+    ],
 }
 
 navigation = st.navigation(pages, position="sidebar")

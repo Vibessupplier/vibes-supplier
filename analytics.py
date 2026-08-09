@@ -43,7 +43,7 @@ def _distinct_id(api_key: str) -> str:
     return st.session_state["analytics_session_id"]
 
 
-def _post_event(url: str, payload: dict[str, Any]) -> None:
+def _post_event(url: str, payload: dict[str, Any]) -> bool:
     try:
         body = json.dumps(payload).encode("utf-8")
         event_request = request.Request(
@@ -54,9 +54,33 @@ def _post_event(url: str, payload: dict[str, Any]) -> None:
         )
         with request.urlopen(event_request, timeout=3):
             pass
+        return True
     except Exception:
         # Analytics must never break or delay an audio tool.
-        return
+        return False
+
+
+def send_event_now(
+    event: str,
+    properties: dict[str, Any] | None = None,
+) -> bool:
+    """Send an event synchronously when the UI needs delivery confirmation."""
+    configuration = _configuration()
+    if configuration is None:
+        return False
+    api_key, host = configuration
+    safe_properties = dict(properties or {})
+    safe_properties.update(
+        {
+            "distinct_id": _distinct_id(api_key),
+            "$geoip_disable": True,
+            "analytics_source": "streamlit_server",
+        }
+    )
+    return _post_event(
+        f"{host}/capture/",
+        {"api_key": api_key, "event": event, "properties": safe_properties},
+    )
 
 
 def track_event(

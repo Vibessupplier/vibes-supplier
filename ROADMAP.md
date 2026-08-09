@@ -45,6 +45,7 @@
 
 ## Version 0.4
 - [x] Privacy-conscious PostHog page and product-event analytics
+- [x] Public Feedback page with rating, category, message, and contact email
 - [ ] Producer accounts
 - [ ] Monthly subscription with processing credits
 - [ ] Free Vocal Split previews

@@ -66,6 +66,9 @@
   final LUFS, peak, and mastering-report measurements.
 - Keep product analytics centralized and optional. Never send uploaded audio,
   filenames, raw cookies, IP addresses, or other unnecessary personal data.
+- Keep public feedback account-free and rate-limited. Submit only the category,
+  rating, and message the visitor intentionally provides; never attach audio or
+  filename metadata automatically.
 
 ## Current application structure
 
@@ -80,6 +83,7 @@
 - `cloud_stem_separation.py`: private Modal vocal separation client.
 - `modal_vocal_split_server.py`: private zero-retention Modal GPU server.
 - `analytics.py`: optional privacy-conscious product-event tracking.
+- `feedback.py`: feedback validation, delivery, and public contact settings.
 - `ui.py`: shared Streamlit presentation helpers.
 - `pages/`: independent Streamlit tool pages.
 - `tests/`: automated tests.
