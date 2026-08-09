@@ -170,18 +170,18 @@ def render_spectral_balance(
     st.markdown(
         """
         <style>
-        .spectrum-panel { padding:1rem; border:1px solid var(--line); border-radius:12px 5px 12px 5px; background:rgba(8,17,13,.72); }
+        .spectrum-panel { padding:1rem; border:1px solid var(--line); border-radius:3px; background:rgba(23,24,21,.88); box-shadow:inset 0 0 0 3px rgba(0,0,0,.14); }
         .spectrum-row { display:grid; grid-template-columns:6.2rem 1fr 4rem; align-items:center; gap:.8rem; min-height:2.55rem; }
         .spectrum-label { color:var(--sand); font-weight:600; font-size:.82rem; line-height:1.15; }
         .spectrum-label small { display:block; margin-top:.18rem; color:var(--muted); font-family:var(--font-technical); font-size:.62rem; font-weight:500; }
         .spectrum-bars { display:grid; gap:.3rem; }
-        .spectrum-track { height:.5rem; overflow:hidden; background:rgba(216,195,154,.13); border-radius:99px; }
-        .spectrum-track i { display:block; min-width:2px; height:100%; background:var(--lime); box-shadow:0 0 8px rgba(184,255,61,.22); }
+        .spectrum-track { height:.5rem; overflow:hidden; background:rgba(216,201,167,.13); border-radius:2px; }
+        .spectrum-track i { display:block; min-width:2px; height:100%; background:var(--amber); box-shadow:none; }
         .spectrum-track.reference i { background:var(--sand); box-shadow:none; }
-        .spectrum-value { color:var(--lime); font-family:var(--font-technical); font-size:.78rem; font-weight:600; text-align:right; }
+        .spectrum-value { color:var(--amber); font-family:var(--font-technical); font-size:.78rem; font-weight:600; text-align:right; }
         .spectrum-legend { display:flex; justify-content:flex-end; gap:1rem; margin-bottom:.7rem; color:var(--sand); font-size:.62rem; letter-spacing:.08em; }
         .spectrum-legend span::before { content:""; display:inline-block; width:.65rem; height:.3rem; margin-right:.3rem; background:var(--sand); }
-        .spectrum-legend .master::before { background:var(--lime); }
+        .spectrum-legend .master::before { background:var(--amber); }
         @media(max-width:640px) { .spectrum-row { grid-template-columns:4.8rem 1fr 3.4rem; gap:.45rem; } }
         </style><div class="spectrum-panel">
         """
@@ -260,34 +260,34 @@ def render_comparison(
             border-collapse: separate;
             border-spacing: 0;
             overflow: hidden;
-            border: 1px solid rgba(216, 195, 154, 0.32);
-            border-radius: 12px;
-            background: rgba(8, 17, 13, 0.72);
+            border: 1px solid rgba(216, 201, 167, 0.32);
+            border-radius: 3px;
+            background: rgba(23, 24, 21, 0.88);
         }
         .ab-comparison-grid th,
         .ab-comparison-grid td {
             padding: 0.8rem 0.9rem;
-            border-right: 1px solid rgba(216, 195, 154, 0.20);
-            border-bottom: 1px solid rgba(216, 195, 154, 0.20);
+            border-right: 1px solid rgba(216, 201, 167, 0.20);
+            border-bottom: 1px solid rgba(216, 201, 167, 0.20);
             text-align: left;
         }
         .ab-comparison-grid thead th {
-            background: rgba(31, 107, 69, 0.35);
-            color: #f1e9d5;
+            background: rgba(89, 68, 49, 0.48);
+            color: #eee3c7;
             font-size: 0.72rem;
             letter-spacing: 0.08em;
         }
         .ab-comparison-grid tbody th {
-            color: #d8c39a;
+            color: #d8c9a7;
             font-weight: 600;
         }
         .ab-comparison-grid td {
-            color: #f1e9d5;
+            color: #eee3c7;
             font-family: var(--font-technical);
             font-variant-numeric: tabular-nums;
         }
         .ab-comparison-grid td.difference {
-            color: #b8ff3d;
+            color: #d99a45;
             font-weight: 700;
         }
         .ab-comparison-grid th:last-child,

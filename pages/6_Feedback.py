@@ -99,14 +99,14 @@ st.markdown(
     .feedback-email {
         display:inline-flex;
         padding:.85rem 1rem;
-        border:1px solid rgba(184,255,61,.38);
-        border-radius:10px 4px 10px 4px;
-        background:rgba(16,39,27,.78);
-        color:var(--lime) !important;
+        border:1px solid rgba(217,154,69,.38);
+        border-radius:3px;
+        background:rgba(28,40,30,.88);
+        color:var(--amber) !important;
         font-family:var(--font-technical);
         text-decoration:none !important;
     }
-    .feedback-email:hover { border-color:var(--lime); }
+    .feedback-email:hover { border-color:var(--amber); }
     </style>
     """,
     unsafe_allow_html=True,
