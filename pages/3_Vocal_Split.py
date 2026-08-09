@@ -12,7 +12,7 @@ from stem_separation import (
     create_vocal_split_preview,
     separate_vocals,
 )
-from ui import load_design, show_header, show_tool_header
+from ui import show_header, show_tool_header
 
 
 @st.cache_data(show_spinner=False)
@@ -53,7 +53,6 @@ def is_vocal_split_enabled() -> bool:
         return False
 
 
-load_design()
 track_page_view("vocal_split")
 show_header()
 show_tool_header(

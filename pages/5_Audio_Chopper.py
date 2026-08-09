@@ -11,7 +11,7 @@ from audio_chopper import (
     create_audio_clip,
     extract_waveform,
 )
-from ui import load_design, show_header, show_tool_header
+from ui import show_header, show_tool_header
 from waveform_component import interactive_waveform
 
 
@@ -49,7 +49,6 @@ def format_time(seconds: float) -> str:
     return f"{int(minutes)}:{remaining_seconds:04.1f}"
 
 
-load_design()
 track_page_view("audio_chopper")
 show_header()
 show_tool_header(

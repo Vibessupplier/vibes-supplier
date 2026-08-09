@@ -1,5 +1,7 @@
 import streamlit as st
 
+from ui import load_design
+
 
 st.set_page_config(
     page_title="Vibes Supplier",
@@ -7,6 +9,8 @@ st.set_page_config(
     layout="centered",
     initial_sidebar_state="expanded",
 )
+
+load_design()
 
 pages = {
     "HOME": [

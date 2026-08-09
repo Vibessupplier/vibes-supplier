@@ -15,7 +15,7 @@ from mastering_analysis import (
     calculate_volume_match_gains,
     create_volume_matched_audio,
 )
-from ui import load_design, show_header, show_tool_header
+from ui import show_header, show_tool_header
 
 
 SPECTRAL_RANGE_LABELS = {
@@ -333,7 +333,6 @@ def analysis_help() -> None:
         )
 
 
-load_design()
 track_page_view("mastering_analyzer")
 show_header()
 show_tool_header(

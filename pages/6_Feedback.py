@@ -11,13 +11,12 @@ from feedback import (
     contact_email,
     submit_feedback,
 )
-from ui import load_design, show_header, show_tool_header
+from ui import show_header, show_tool_header
 
 
 SUBMISSION_COOLDOWN_SECONDS = 30
 
 
-load_design()
 track_page_view("feedback")
 show_header()
 show_tool_header(

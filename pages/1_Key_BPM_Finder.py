@@ -11,14 +11,13 @@ from audio_analysis import (
     get_bpm_options
 )
 
-from ui import load_design, show_header, show_tool_header
+from ui import show_header, show_tool_header
 
 
 # -------------------------
 # DESIGN
 # -------------------------
 
-load_design()
 track_page_view("key_bpm_finder")
 show_header()
 show_tool_header(

@@ -16,7 +16,7 @@ from audio_effects import (
     create_speed_preview,
 )
 from audio_engine import AudioProcessingError
-from ui import load_design, show_header, show_tool_header
+from ui import show_header, show_tool_header
 
 
 @st.cache_data(show_spinner=False)
@@ -27,7 +27,6 @@ def detect_uploaded_bpm(audio_data: bytes, suffix: str) -> float:
         input_path.write_bytes(audio_data)
         return detect_bpm_from_file(input_path)
 
-load_design()
 track_page_view("speed_changer")
 show_header()
 show_tool_header(
