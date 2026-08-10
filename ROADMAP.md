@@ -104,7 +104,9 @@
 - [x] Phase-cancellation risk zones and live mono-safety status
 - [x] Listening-only Monitor Level and Mute that do not affect measurements
 - [x] Browser-side Mono Check for temporary listening
-- [ ] Extend the live Mastering Monitor to synchronized A/B comparison
+- [x] Lightweight synchronized A/B listening deck with instant source switching
+- [x] Original/Volume Match listening, global LUFS/RMS bars, and live RMS markers
+- [x] Listening-only A/B Monitor Level and Mute after source selection
 - [ ] Highlight clipping and notable loudness sections on the timeline
 
 ---
@@ -158,7 +160,7 @@
 - [ ] Add Audio Chopper direct drag-to-pan navigation
 - [ ] Build the Delay Time Calculator as a focused standalone tool
 - [ ] Define and validate the Reverb Time Calculator formulas and guidance
-- [ ] Extend the live Mastering Monitor to A/B comparison
+- [ ] Validate the synchronized A/B deck on desktop Edge and mobile browsers
 - [ ] Benchmark Modal with full three-minute MP3 and WAV tracks
 - [ ] Define free and Premium usage limits from measured processing costs
 - [ ] Prepare a small external beta and review PostHog and Feedback results
@@ -181,6 +183,11 @@
   vectorscope, unified stereo/phase visualization, selectable response, and a
   listening-only Monitor Level. The final global report remains authoritative
   on FFmpeg.
+- Mastering Analyzer Compare has a lightweight synchronized A/B deck with one
+  audible source at a time, instant A/B switching, Original or Volume Match
+  playback, global original-file LUFS/RMS bars, live RMS markers, and a
+  listening-only Monitor Level. It intentionally does not duplicate the full
+  single-master laboratory.
 - The active art direction is Jungle Analog. The original jungle background and
   bird/audio-laboratory hero remain core artwork; UI neon and Acid Lime were
   replaced by warm cream, walnut, oxidized metal, olive, and VU Amber.

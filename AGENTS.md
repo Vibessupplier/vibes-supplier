@@ -62,14 +62,19 @@
   limitations. Do not reduce mastering quality to a single unexplained score.
 - Keep A/B comparison measurements based on the original uploaded masters.
   Volume Match may alter temporary listening copies only and must be optional.
+- The comparison flow uses a lightweight synchronized browser-side A/B deck,
+  not two copies of the full single-master monitor. Keep both sources on the
+  same playhead while allowing only the selected A or B source to reach the
+  output. Global LUFS/RMS bars must use the authoritative original-file report;
+  live RMS markers may follow the current listening copies. A/B Monitor Level
+  and Mute must remain after source selection and affect listening only.
 - The single-master flow uses a reusable browser-side Web Audio player for its
   waveform, playhead, spectrum, analog Peak/RMS meters, digital L/R Peak/RMS
   bars with Peak Hold, stereo vectorscope, unified balance/width/phase display,
   response speed, Mono Check, and listening-only Monitor Level. The Monitor
   Level and Mute must remain after the measurement taps so they never affect
   live meter values or authoritative analysis. Streamlit reruns must not drive
-  live meters or playback synchronization. Extending this monitor to
-  synchronized A/B remains future work.
+  live meters or playback synchronization.
 - Treat live browser measurements as responsive listening context, not final
   report values. Keep FFmpeg analysis authoritative for integrated LUFS, true
   peak, dynamics, static stereo/spectral measurements, and the final mastering
@@ -111,6 +116,9 @@
 - `mastering_analysis.py`: loudness, stereo, and static spectral analysis.
 - `mastering_monitor_component.py`: browser-side live mastering player,
   spectrum, meters, stereo readouts, and Mono Check.
+- `mastering_ab_component.py`: lightweight synchronized A/B player, instant
+  source switching, LUFS/RMS comparison bars, live RMS markers, and listening
+  Monitor Level.
 - `stem_separation.py`: product-level local and cloud vocal separation.
 - `cloud_stem_separation.py`: private Modal vocal separation client.
 - `modal_vocal_split_server.py`: private zero-retention Modal GPU server.
@@ -177,6 +185,11 @@
   unified balance/width/phase and mono-safety visualization, Mono Check,
   listening-only Monitor Level/Mute, and Steady/Balanced/Fast response. Keep it
   distinct from any future AI Mastering product.
+- The comparison mode uses the v2 synchronized A/B deck. It starts both audio
+  sources at one shared playhead, routes only A or B to the output, corrects
+  meaningful playback drift, supports Original and Volume Match listening, and
+  shows authoritative global LUFS/RMS beside live RMS markers. Its Monitor
+  Level/Mute is downstream of A/B selection and cannot alter measurements.
 - Future Delay Time and Reverb Time Calculators should be focused standalone
   tools that work instantly from BPM without an audio upload. Delay must include
   straight, dotted, and triplet subdivisions. Reverb timings are useful starting
@@ -229,7 +242,7 @@
   views plus explicit feedback submissions. Analytics must remain optional and
   must never receive audio, filenames, raw cookies, or location data.
 - The public feedback contact is `vibes.supplier@gmail.com`.
-- The current automated suite contains 54 tests and passes with
+- The current automated suite contains 58 tests and passes with
   `.venv/bin/python -m unittest discover -s tests -q`. The local virtual
   environment does not currently include pytest.
 
@@ -238,7 +251,7 @@
 1. Verify the deployed Jungle Analog visuals, four-slot Audio Chopper tray, Live
    Speed Deck, and single-master VS Mastering Monitor on desktop and mobile.
 2. Choose one focused increment: Delay Time Calculator, Reverb Time Calculator
-   formula design, Mastering Monitor A/B extension, or Audio Chopper drag-to-pan.
+   formula design, or Audio Chopper drag-to-pan.
 3. Prefer the Delay Time Calculator first: it is useful, SEO-focused, instant,
    and has no audio-processing cost.
 4. Keep the increment small, run the 50-test suite, syntax and diff checks, then

@@ -15,6 +15,7 @@ from mastering_analysis import (
     calculate_volume_match_gains,
     create_volume_matched_audio,
 )
+from mastering_ab_component import mastering_ab_player
 from mastering_monitor_component import live_mastering_monitor
 from ui import show_header, show_tool_header
 
@@ -416,8 +417,6 @@ if analysis_mode == "Compare with reference":
                 {"tool": "mastering_analyzer"},
                 once_key=f"comparison_{comparison_signature}",
             )
-            render_comparison(reference_report, track_report)
-
             st.subheader("A / B listening")
             volume_match = st.toggle(
                 "VOLUME MATCH",
@@ -461,27 +460,35 @@ if analysis_mode == "Compare with reference":
             else:
                 st.caption("Original playback levels — useful for judging the real LUFS/RMS difference.")
 
-            player_reference_column, player_track_column = st.columns(2)
-            with player_reference_column:
-                st.markdown("**REFERENCE**")
-                st.audio(
-                    player_reference,
-                    format=(
-                        "audio/mpeg"
-                        if volume_match
-                        else audio_mime_type(reference_file.name)
-                    ),
-                )
-            with player_track_column:
-                st.markdown("**YOUR MASTER**")
-                st.audio(
-                    player_track,
-                    format=(
-                        "audio/mpeg"
-                        if volume_match
-                        else audio_mime_type(track_file.name)
-                    ),
-                )
+            mastering_ab_player(
+                player_reference,
+                (
+                    "audio/mpeg"
+                    if volume_match
+                    else audio_mime_type(reference_file.name)
+                ),
+                player_track,
+                (
+                    "audio/mpeg"
+                    if volume_match
+                    else audio_mime_type(track_file.name)
+                ),
+                reference_lufs=reference_metrics.integrated_lufs,
+                reference_rms=reference_metrics.rms_level_dbfs,
+                track_lufs=track_metrics.integrated_lufs,
+                track_rms=track_metrics.rms_level_dbfs,
+                volume_matched=volume_match,
+                audio_id=(
+                    f"{reference_file.name}:{reference_file.size}:"
+                    f"{track_file.name}:{track_file.size}:{volume_match}"
+                ),
+                key=(
+                    f"mastering_ab_v2_{reference_file.name}_{reference_file.size}_"
+                    f"{track_file.name}_{track_file.size}_{volume_match}"
+                ),
+            )
+
+            render_comparison(reference_report, track_report)
 
             analysis_help()
             st.caption(
