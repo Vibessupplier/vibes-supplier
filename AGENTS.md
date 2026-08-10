@@ -63,10 +63,13 @@
 - Keep A/B comparison measurements based on the original uploaded masters.
   Volume Match may alter temporary listening copies only and must be optional.
 - The single-master flow uses a reusable browser-side Web Audio player for its
-  waveform, playhead, spectrum, Peak/RMS meters, stereo measurements, response
-  speed, and Mono Check. Streamlit reruns must not drive live meters or playback
-  synchronization. Extending this monitor to synchronized A/B remains future
-  work.
+  waveform, playhead, spectrum, analog Peak/RMS meters, digital L/R Peak/RMS
+  bars with Peak Hold, stereo vectorscope, unified balance/width/phase display,
+  response speed, Mono Check, and listening-only Monitor Level. The Monitor
+  Level and Mute must remain after the measurement taps so they never affect
+  live meter values or authoritative analysis. Streamlit reruns must not drive
+  live meters or playback synchronization. Extending this monitor to
+  synchronized A/B remains future work.
 - Treat live browser measurements as responsive listening context, not final
   report values. Keep FFmpeg analysis authoritative for integrated LUFS, true
   peak, dynamics, static stereo/spectral measurements, and the final mastering
@@ -169,9 +172,11 @@
 - The Mastering Analyzer now provides LUFS, dBFS/true peak, dynamics, stereo
   measurements, mono compatibility, A/B reference comparison, Volume Match,
   static spectral balance, and a live single-master Web Audio monitor. The live
-  monitor has waveform seeking, spectrum, illuminated Peak/RMS meters, stereo
-  balance/width/correlation, Mono Check, and Steady/Balanced/Fast response.
-  Keep it distinct from any future AI Mastering product.
+  monitor has waveform seeking, spectrum, illuminated analog Peak/RMS meters,
+  full-height digital L/R Peak/RMS bars with Peak Hold, a stereo vectorscope,
+  unified balance/width/phase and mono-safety visualization, Mono Check,
+  listening-only Monitor Level/Mute, and Steady/Balanced/Fast response. Keep it
+  distinct from any future AI Mastering product.
 - Future Delay Time and Reverb Time Calculators should be focused standalone
   tools that work instantly from BPM without an audio upload. Delay must include
   straight, dotted, and triplet subdivisions. Reverb timings are useful starting
@@ -209,11 +214,14 @@
   fixed height is 330 px so the accessible arrow and plus/minus controls are not
   clipped on Streamlit Cloud.
 - The Speed Changer Live Deck currently uses the v1 component name/key.
-- The Mastering Monitor currently uses the v6 component name/key. Its live
-  spectrum remains fluid while the user selects Steady, Balanced, or Fast meter
-  response. Its Peak/RMS meters use restrained black oxidation, warm glass,
-  incandescent illumination, and VU-inspired proportions while continuing to
-  report approximate digital dBFS measurements.
+- The Mastering Monitor currently uses the v10 component name/key. Its live
+  spectrum and vectorscope remain fluid while the user selects Steady,
+  Balanced, or Fast meter response. Its Peak/RMS meters use restrained black
+  oxidation, warm glass, incandescent illumination, and correctly positioned
+  VU scales. Full-height digital L/R bars show Peak, RMS, Peak Hold, and
+  clipping. Balance, width, and phase/mono safety share one instrument panel,
+  including visible phase-cancellation risk. Monitor Level and Mute affect
+  listening only and remain downstream of all measurement taps.
 - Vocal Split's 20-second Modal preview was quality-validated, but public use is
   paused because isolated requests were approximately $0.017-$0.020 with the
   current idle window. `ECONOMY.md` contains the assumptions and benchmarks.
@@ -221,7 +229,7 @@
   views plus explicit feedback submissions. Analytics must remain optional and
   must never receive audio, filenames, raw cookies, or location data.
 - The public feedback contact is `vibes.supplier@gmail.com`.
-- The current automated suite contains 50 tests and passes with
+- The current automated suite contains 54 tests and passes with
   `.venv/bin/python -m unittest discover -s tests -q`. The local virtual
   environment does not currently include pytest.
 

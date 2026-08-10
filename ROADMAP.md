@@ -95,8 +95,14 @@
 - [x] Interactive waveform with clickable playhead
 - [ ] Live spectrogram
 - [x] Live peak and RMS meters with selectable response speed
+- [x] Illuminated analog Peak/RMS meters with correctly positioned VU scales
+- [x] Full-height digital L/R Peak, RMS, clipping, and Peak Hold meters
 - [ ] Live momentary and short-term LUFS meters
 - [x] Live frequency spectrum, stereo balance, and phase correlation meters
+- [x] Live stereo vectorscope/goniometer
+- [x] Unified visual Balance, Width, and Phase/Mono Safety instrument
+- [x] Phase-cancellation risk zones and live mono-safety status
+- [x] Listening-only Monitor Level and Mute that do not affect measurements
 - [x] Browser-side Mono Check for temporary listening
 - [ ] Extend the live Mastering Monitor to synchronized A/B comparison
 - [ ] Highlight clipping and notable loudness sections on the timeline
@@ -171,8 +177,10 @@
   Follow Speed, Keep Original Pitch, and an analog Custom Pitch knob. Only
   Custom Pitch requires a rendered preview before final FFmpeg export.
 - Mastering Analyzer Single Master has a live Web Audio monitor with waveform,
-  spectrum, Mono Check, Peak/RMS meters, stereo readouts, and selectable meter
-  response. The final global report remains authoritative on FFmpeg.
+  spectrum, Mono Check, analog Peak/RMS meters, full-height digital L/R meters,
+  vectorscope, unified stereo/phase visualization, selectable response, and a
+  listening-only Monitor Level. The final global report remains authoritative
+  on FFmpeg.
 - The active art direction is Jungle Analog. The original jungle background and
   bird/audio-laboratory hero remain core artwork; UI neon and Acid Lime were
   replaced by warm cream, walnut, oxidized metal, olive, and VU Amber.
