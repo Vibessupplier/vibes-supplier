@@ -6,15 +6,30 @@ import streamlit as st
 from analytics import track_event, track_page_view
 from audio_chopper import (
     AudioChopperError,
-    CHOPPER_PREVIEW_SECONDS,
     SAMPLE_TRAY_LIMIT,
     WaveformData,
     build_sample_archive,
     create_audio_clip,
     extract_waveform,
 )
-from ui import show_header, show_panel_label, show_tool_header
+from sample_tray_component import sample_memory
+from ui import show_header, show_tool_header
 from waveform_component import interactive_waveform
+
+
+TRAY_COMPONENT_KEY = "audio_chopper_sample_memory_v1"
+PENDING_TRAY_ACTION_KEY = "audio_chopper_pending_tray_action"
+
+
+def capture_tray_action() -> None:
+    """Copy a tray action into session state before Streamlit reruns."""
+    component_state = st.session_state.get(TRAY_COMPONENT_KEY, {})
+    if isinstance(component_state, dict):
+        action = component_state.get("action")
+    else:
+        action = getattr(component_state, "action", None)
+    if action:
+        st.session_state[PENDING_TRAY_ACTION_KEY] = dict(action)
 
 
 @st.cache_data(show_spinner=False)
@@ -91,7 +106,6 @@ if audio_file is not None:
                 st.code(str(error))
                 st.stop()
         st.session_state["chopper_waveform"] = waveform
-        st.session_state.pop("chopper_preview", None)
         st.session_state["chopper_samples"] = []
         st.session_state["chopper_next_sample_id"] = 1
         st.session_state["chopper_view_window"] = (
@@ -100,6 +114,9 @@ if audio_file is not None:
         )
         st.session_state.pop("chopper_selection", None)
         st.session_state.pop("chopper_selection_signature", None)
+        st.session_state["chopper_last_commit_id"] = 0
+        st.session_state.pop(PENDING_TRAY_ACTION_KEY, None)
+        st.session_state.pop(TRAY_COMPONENT_KEY, None)
         st.session_state["chopper_upload_signature"] = upload_signature
 
     waveform = st.session_state["chopper_waveform"]
@@ -113,6 +130,22 @@ if audio_file is not None:
         "chopper_selection",
         (0.0, float(default_end)),
     )
+    saved_samples = st.session_state.setdefault("chopper_samples", [])
+    pending_tray_action = st.session_state.pop(PENDING_TRAY_ACTION_KEY, None)
+    if pending_tray_action is not None:
+        action_type = pending_tray_action.get("type")
+        sample_id = pending_tray_action.get("id")
+        sample = next(
+            (item for item in saved_samples if item["id"] == sample_id),
+            None,
+        )
+        if sample is not None and action_type == "remove":
+            saved_samples.remove(sample)
+        elif sample is not None and action_type == "rename":
+            updated_name = str(pending_tray_action.get("name", "")).strip()
+            if updated_name:
+                sample["name"] = updated_name[:64]
+
     with st.spinner("Preparing the interactive player..."):
         try:
             browser_audio = create_browser_audio(
@@ -129,9 +162,12 @@ if audio_file is not None:
         current_selection,
         (view_start_seconds, view_end_seconds),
         browser_audio,
+        tray_count=len(saved_samples),
     )
     start_seconds = float(component_selection["start"])
     end_seconds = float(component_selection["end"])
+    requested_fade_ms = int(component_selection.get("fade_ms", 10))
+    fade_ms = requested_fade_ms if requested_fade_ms in {0, 5, 10, 25, 50} else 10
     view_start_seconds = float(component_selection["view_start"])
     view_end_seconds = float(component_selection["view_end"])
     st.session_state["chopper_selection"] = (start_seconds, end_seconds)
@@ -140,9 +176,7 @@ if audio_file is not None:
         view_end_seconds,
     )
     selection_signature = (*upload_signature, start_seconds, end_seconds)
-    if st.session_state.get("chopper_selection_signature") != selection_signature:
-        st.session_state.pop("chopper_preview", None)
-        st.session_state["chopper_selection_signature"] = selection_signature
+    st.session_state["chopper_selection_signature"] = selection_signature
 
     st.markdown(
         f"""
@@ -155,123 +189,59 @@ if audio_file is not None:
         unsafe_allow_html=True,
     )
     st.caption(
-        "Play, selection and zoom stay in the browser. Press Use Selection "
-        "only when the range is ready for preview or export."
+        "Select, play or loop the range in the browser. Use Selection cuts the "
+        "complete range with FFmpeg and loads it directly into Sample Memory."
     )
 
-    saved_samples = st.session_state.setdefault("chopper_samples", [])
-    tray_is_full = len(saved_samples) >= SAMPLE_TRAY_LIMIT
+    commit_id = int(component_selection.get("commit_id", 0))
+    last_commit_id = int(st.session_state.get("chopper_last_commit_id", 0))
+    if commit_id > last_commit_id:
+        st.session_state["chopper_last_commit_id"] = commit_id
+        if len(saved_samples) >= SAMPLE_TRAY_LIMIT:
+            st.warning("Sample Memory is full. Remove a slot before adding another.")
+        else:
+            with st.spinner("Cutting the selection into Sample Memory..."):
+                try:
+                    with tempfile.TemporaryDirectory() as temp_directory:
+                        input_path = Path(temp_directory) / f"source{suffix}"
+                        output_path = Path(temp_directory) / "sample.mp3"
+                        input_path.write_bytes(audio_data)
+                        create_audio_clip(
+                            input_path,
+                            output_path,
+                            start_seconds,
+                            end_seconds,
+                            waveform.duration_seconds,
+                            edge_fade_seconds=fade_ms / 1000.0,
+                        )
+                        sample_id = st.session_state.get(
+                            "chopper_next_sample_id", 1
+                        )
+                        saved_samples.append(
+                            {
+                                "id": sample_id,
+                                "name": f"SAMPLE_{sample_id:02d}",
+                                "audio": output_path.read_bytes(),
+                                "start": start_seconds,
+                                "end": end_seconds,
+                            }
+                        )
+                        st.session_state["chopper_next_sample_id"] = sample_id + 1
+                        track_event(
+                            "audio_processing_completed",
+                            {"tool": "audio_chopper", "destination": "sample_tray"},
+                        )
+                except (AudioChopperError, OSError) as error:
+                    st.error("The sample could not be added to Sample Memory.")
+                    st.code(str(error))
 
-    preview_column, save_column = st.columns(2)
-    with preview_column:
-        create_preview = st.button("PREVIEW SELECTION", type="secondary")
-    with save_column:
-        save_sample = st.button(
-            "SAVE SAMPLE",
-            type="primary",
-            disabled=tray_is_full,
-            help=(
-                f"The sample tray holds {SAMPLE_TRAY_LIMIT} samples. "
-                "Remove one to save another."
-                if tray_is_full
-                else "Cut this selection and add it to the sample tray."
-            ),
-        )
-
-    if create_preview:
-        with st.spinner("Preparing the selected preview..."):
-            try:
-                with tempfile.TemporaryDirectory() as temp_directory:
-                    input_path = Path(temp_directory) / f"source{suffix}"
-                    output_path = Path(temp_directory) / "sample-preview.mp3"
-                    input_path.write_bytes(audio_data)
-                    create_audio_clip(
-                        input_path,
-                        output_path,
-                        start_seconds,
-                        end_seconds,
-                        waveform.duration_seconds,
-                        maximum_duration_seconds=CHOPPER_PREVIEW_SECONDS,
-                    )
-                    st.session_state["chopper_preview"] = output_path.read_bytes()
-                    track_event("audio_preview_created", {"tool": "audio_chopper"})
-            except (AudioChopperError, OSError) as error:
-                st.error("The selected preview could not be created.")
-                st.code(str(error))
-
-    if save_sample:
-        with st.spinner("Saving the selection to your sample tray..."):
-            try:
-                with tempfile.TemporaryDirectory() as temp_directory:
-                    input_path = Path(temp_directory) / f"source{suffix}"
-                    output_path = Path(temp_directory) / "sample.mp3"
-                    input_path.write_bytes(audio_data)
-                    create_audio_clip(
-                        input_path,
-                        output_path,
-                        start_seconds,
-                        end_seconds,
-                        waveform.duration_seconds,
-                    )
-                    sample_id = st.session_state.get("chopper_next_sample_id", 1)
-                    saved_samples.append(
-                        {
-                            "id": sample_id,
-                            "name": f"sample_{sample_id:02d}",
-                            "audio": output_path.read_bytes(),
-                            "start": start_seconds,
-                            "end": end_seconds,
-                        }
-                    )
-                    st.session_state["chopper_next_sample_id"] = sample_id + 1
-                    st.session_state.pop("chopper_preview", None)
-                    track_event(
-                        "audio_processing_completed",
-                        {"tool": "audio_chopper", "destination": "sample_tray"},
-                    )
-            except (AudioChopperError, OSError) as error:
-                st.error("The sample could not be saved.")
-                st.code(str(error))
-
-    preview = st.session_state.get("chopper_preview")
-    if preview is not None:
-        st.write("**Selected preview (up to 30 seconds)**")
-        st.audio(preview, format="audio/mpeg")
+    sample_memory(
+        saved_samples,
+        key=TRAY_COMPONENT_KEY,
+        on_action_change=capture_tray_action,
+    )
 
     if saved_samples:
-        show_panel_label("TRAY 02", "SAVED SAMPLES", "LOADED")
-        st.markdown(
-            f'<div class="sample-tray-count">{len(saved_samples)} / '
-            f'{SAMPLE_TRAY_LIMIT} sample slots loaded</div>',
-            unsafe_allow_html=True,
-        )
-
-        for position, sample in enumerate(list(saved_samples), start=1):
-            with st.container(border=True):
-                name_column, delete_column = st.columns([4, 1])
-                with name_column:
-                    updated_name = st.text_input(
-                        f"Sample {position} name",
-                        value=sample["name"],
-                        key=f"chopper_sample_name_{sample['id']}",
-                    )
-                    sample["name"] = updated_name
-                with delete_column:
-                    st.write("")
-                    if st.button(
-                        "REMOVE",
-                        key=f"chopper_remove_sample_{sample['id']}",
-                        type="secondary",
-                    ):
-                        saved_samples.remove(sample)
-                        st.rerun()
-                st.caption(
-                    f"{format_time(sample['start'])} — "
-                    f"{format_time(sample['end'])} · "
-                    f"{sample['end'] - sample['start']:.1f} seconds"
-                )
-                st.audio(sample["audio"], format="audio/mpeg")
-
         try:
             archive_data = build_sample_archive(
                 [(sample["name"], sample["audio"]) for sample in saved_samples]
@@ -280,9 +250,9 @@ if audio_file is not None:
             st.error(str(error))
         else:
             st.download_button(
-                "DOWNLOAD ALL SAMPLES",
+                "DOWNLOAD ALL / ZIP",
                 data=archive_data,
-                file_name=f"{Path(audio_file.name).stem}_samples.zip",
+                file_name="vibes_supplier_samples.zip",
                 mime="application/zip",
                 on_click=track_event,
                 args=(
@@ -291,12 +261,10 @@ if audio_file is not None:
                 ),
             )
 
-        if tray_is_full:
-            st.info(
-                "Your sample tray is full. Remove a sample to cut another."
-            )
+    if len(saved_samples) >= SAMPLE_TRAY_LIMIT:
+        st.info("Sample Memory is full: 4 of 4 slots loaded.")
 
     st.caption(
-        "The highlighted waveform is the selected range. Preview is limited "
-        "to 30 seconds; Save Sample adds the complete selection to your tray."
+        "The highlighted waveform is the active range. Use Selection adds the "
+        "complete FFmpeg cut directly to the first free memory slot."
     )

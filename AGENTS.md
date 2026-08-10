@@ -49,12 +49,13 @@
   audio after processing unless persistent storage is intentionally designed.
 - Keep waveform selection in the UI, but perform sample extraction and export
   through reusable product-level functions backed by `audio_engine.py`.
-- The Audio Chopper uses a reusable JavaScript/Web Audio component for direct
-  selection, mouse-wheel zoom/navigation, synchronized playback, and looping
-  without Streamlit reruns. Keep final trimming and export authoritative on
-  the Python/FFmpeg side. Saved clips live only in the temporary four-slot
-  Sample Tray and download together as a ZIP; direct drag-to-pan remains a
-  future enhancement.
+- The Audio Chopper uses a reusable browser component for direct selection,
+  mouse-wheel zoom/navigation, synchronized playback, looping, edge auto-pan,
+  listening-only Monitor Level, and fade audition without Streamlit reruns.
+  `Use Selection` must trim immediately through the authoritative Python/FFmpeg
+  path and load the first free slot. Saved clips live only in the temporary
+  four-slot LCD Sample Memory, share one compact browser player, and download
+  together as a ZIP. Direct background drag-to-pan remains a future enhancement.
 - The Mastering Analyzer is a focused Analyze tool. Keep LUFS,
   peak/true-peak, dynamic-range, stereo-width, phase-correlation, and mono
   compatibility measurements in reusable analysis modules rather than the page.
@@ -114,6 +115,7 @@
 - `audio_effects.py`: reusable product-level audio transformations.
 - `audio_chopper.py`: waveform extraction and selected-fragment export.
 - `waveform_component.py`: browser-side interactive waveform and playback.
+- `sample_tray_component.py`: compact browser-side four-slot Sample Memory.
 - `speed_player_component.py`: browser-side live Speed Changer deck and analog
   pitch controls.
 - `mastering_analysis.py`: loudness, stereo, and static spectral analysis.
@@ -174,12 +176,12 @@
 - Keep pitch and tempo processing reusable so future focused, SEO-friendly tool
   pages can share the same engine without duplicating logic.
 - Audio Chopper Beta provides a high-resolution interactive waveform, direct
-  range selection, mouse-wheel and button zoom, horizontal navigation buttons,
-  synchronized playhead, Loop Selection, visible Use Selection confirmation,
-  optional processed preview, reusable selections, and a temporary four-slot
-  Sample Tray with rename, playback, removal, and ZIP download. Browser
-  interaction must reuse the existing trimming engine rather than duplicate
-  final export processing inside the component.
+  range selection, mouse-wheel and button zoom, horizontal and edge-triggered
+  navigation, synchronized playhead, Loop Selection, listening-only Monitor
+  Level, and live edge-fade audition. `Use Selection` immediately creates the
+  authoritative FFmpeg sample in the first free slot. The compact four-slot LCD
+  Sample Memory supports inline rename, shared playback, removal, and ZIP
+  download without native per-sample audio players.
 - The Mastering Analyzer now provides LUFS, dBFS/true peak, dynamics, stereo
   measurements, mono compatibility, A/B reference comparison, Volume Match,
   static spectral balance, and a live single-master Web Audio monitor. The live
@@ -226,9 +228,10 @@
 - Shared buttons use tactile 1980s equipment styling, physical pressed states,
   subtle texture, and amber processing lamps. Live processing states should
   resemble equipment powering on rather than neon software loading.
-- The Audio Chopper component currently uses the v6 component name/key. Its
-  fixed height is 330 px so the accessible arrow and plus/minus controls are not
-  clipped on Streamlit Cloud.
+- The Audio Chopper component currently uses the v10 component name/key. Its
+  fixed height is 390 px so its waveform, fade selector, Monitor Level, and
+  accessible navigation controls are not clipped on Streamlit Cloud. The LCD
+  Sample Memory uses its own v1 component name/key.
 - The Speed Changer Live Deck currently uses the v2 component name/key. It
   starts at the detected BPM and `1.000×`, resets Target BPM to a manually
   corrected Original BPM, and includes listening-only Monitor Level/Mute that
@@ -248,17 +251,17 @@
   views plus explicit feedback submissions. Analytics must remain optional and
   must never receive audio, filenames, raw cookies, or location data.
 - The public feedback contact is `vibes.supplier@gmail.com`.
-- The current automated suite contains 61 tests and passes with
+- The current automated suite contains 71 tests and passes with
   `.venv/bin/python -m unittest discover -s tests -q`. The local virtual
   environment does not currently include pytest.
 
 ## Recommended next session
 
-1. Verify the deployed Jungle Analog visuals, four-slot Audio Chopper tray, Live
+1. Verify the deployed Jungle Analog visuals, four-slot Audio Chopper Sample Memory, Live
    Speed Deck, and single-master VS Mastering Monitor on desktop and mobile.
 2. Choose one focused increment: Delay Time Calculator, Reverb Time Calculator
    formula design, or Audio Chopper drag-to-pan.
 3. Prefer the Delay Time Calculator first: it is useful, SEO-focused, instant,
    and has no audio-processing cost.
-4. Keep the increment small, run the 50-test suite, syntax and diff checks, then
+4. Keep the increment small, run the 71-test suite, syntax and diff checks, then
    wait for explicit product-owner approval before committing or pushing.

@@ -59,6 +59,49 @@ class AudioChopperTest(unittest.TestCase):
             output_duration_seconds=30.0,
         )
 
+    @patch("audio_chopper.transform_audio")
+    def test_applies_short_edge_fades_without_changing_clip_length(
+        self, transform_mock
+    ):
+        source = Path("track.wav")
+        output = Path("sample.mp3")
+        transform_mock.return_value = output
+
+        create_audio_clip(
+            source,
+            output,
+            12.0,
+            16.0,
+            60.0,
+            edge_fade_seconds=0.01,
+        )
+
+        transform_mock.assert_called_once_with(
+            source,
+            output,
+            filters=[
+                "afade=t=in:st=0:d=0.010000",
+                "afade=t=out:st=3.990000:d=0.010000",
+            ],
+            input_start_seconds=12.0,
+            output_duration_seconds=4.0,
+        )
+
+    @patch("audio_chopper.transform_audio")
+    def test_caps_edge_fade_to_quarter_of_short_sample(self, transform_mock):
+        create_audio_clip(
+            Path("track.wav"),
+            Path("sample.mp3"),
+            0.0,
+            0.1,
+            10.0,
+            edge_fade_seconds=0.05,
+        )
+
+        filters = transform_mock.call_args.kwargs["filters"]
+        self.assertEqual(filters[0], "afade=t=in:st=0:d=0.025000")
+        self.assertEqual(filters[1], "afade=t=out:st=0.075000:d=0.025000")
+
     def test_sanitizes_sample_filename(self):
         self.assertEqual(safe_sample_filename(" ../My Sample!!.mp3 ", 1), "My_Sample.mp3")
         self.assertEqual(safe_sample_filename("...", 3), "sample_03.mp3")

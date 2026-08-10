@@ -124,6 +124,7 @@ def create_audio_clip(
     end_seconds: float,
     source_duration_seconds: float,
     maximum_duration_seconds: float | None = None,
+    edge_fade_seconds: float = 0.0,
 ) -> Path:
     """Export a selected range, optionally limiting a listening preview."""
     clip_duration = validate_clip_range(
@@ -135,8 +136,26 @@ def create_audio_clip(
         if maximum_duration_seconds <= 0:
             raise AudioChopperError("Maximum duration must be greater than zero.")
         clip_duration = min(clip_duration, maximum_duration_seconds)
+    if not math.isfinite(edge_fade_seconds) or edge_fade_seconds < 0:
+        raise AudioChopperError("Edge fade must be a finite non-negative duration.")
+    applied_fade = min(edge_fade_seconds, clip_duration / 4.0)
 
     try:
+        if applied_fade > 0:
+            fade_out_start = clip_duration - applied_fade
+            return transform_audio(
+                input_path,
+                output_path,
+                filters=[
+                    f"afade=t=in:st=0:d={applied_fade:.6f}",
+                    (
+                        "afade=t=out:"
+                        f"st={fade_out_start:.6f}:d={applied_fade:.6f}"
+                    ),
+                ],
+                input_start_seconds=start_seconds,
+                output_duration_seconds=clip_duration,
+            )
         return transform_audio(
             input_path,
             output_path,

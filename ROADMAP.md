@@ -116,16 +116,20 @@
 ## Future Ideas
 - [x] Audio Chopper Beta page
 - [x] High-resolution waveform data and precise sample trimming
-- [x] Browser-side selected-fragment player and optional processed preview
+- [x] Browser-side original-track and selected-fragment audition
 - [x] Export user-selected samples in MP3
 - [x] JavaScript/Web Audio waveform component with direct drag selection
 - [x] Mouse-wheel zoom and horizontal navigation without Streamlit reruns
 - [x] Accessible zoom and horizontal navigation buttons for trackpads and touch users
 - [x] Synchronized playhead and infinite Loop Selection mode
 - [x] Visible confirmation when applying a waveform selection
-- [x] Reusable selection after saving a sample
-- [x] Temporary four-slot sample tray with rename, preview, and remove actions
-- [x] Download all saved samples together as a ZIP
+- [x] `Use Selection` immediately exports through FFmpeg into the first free slot
+- [x] Reusable selection after creating or removing a sample
+- [x] Compact four-slot LCD Sample Memory with rename, play/stop, progress, and remove actions
+- [x] Listening-only Monitor Level and Mute that never affect sample export
+- [x] Automatic edge navigation while dragging a zoomed selection
+- [x] Optional 5/10/25/50 ms edge fades, auditioned live and rendered authoritatively by FFmpeg
+- [x] Download all saved samples together as `vibes_supplier_samples.zip`
 - [ ] Direct drag-to-pan waveform navigation
 - [ ] Premium WAV and FLAC sample export
 - [ ] Multi-stem separation (vocals, drums, bass, and other)
@@ -175,8 +179,9 @@
   public processing action is intentionally disabled while cost and access
   controls are designed.
 - Audio Chopper Beta has direct waveform selection, wheel and button zoom,
-  horizontal navigation, synchronized playback, looping, reusable selection,
-  a temporary four-slot Sample Tray, and combined ZIP export.
+  horizontal and automatic edge navigation, synchronized playback, looping,
+  listening-only Monitor Level, reusable one-click selection, optional edge
+  fades, a compact four-slot LCD Sample Memory, and combined ZIP export.
 - Speed Changer has a browser-side Live Speed Deck for instant tempo audition,
   Follow Speed, Keep Original Pitch, an analog Custom Pitch knob, and a
   listening-only Monitor Level/Mute. New uploads start with Target BPM equal to

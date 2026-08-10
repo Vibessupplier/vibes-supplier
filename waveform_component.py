@@ -19,7 +19,23 @@ WAVEFORM_HTML = """
         <span class="selection-time"></span>
         <button type="button" class="apply" data-action="apply">USE SELECTION</button>
     </div>
+    <div class="edge-fade">
+        <span>EDGE FADE / DE-CLICK</span>
+        <div role="group" aria-label="Sample edge fade duration">
+            <button type="button" data-fade="0">OFF</button>
+            <button type="button" data-fade="5">5</button>
+            <button type="button" data-fade="10" class="active">10</button>
+            <button type="button" data-fade="25">25</button>
+            <button type="button" data-fade="50">50 ms</button>
+        </div>
+        <small>HEARD IN PLAY / APPLIED ON USE SELECTION</small>
+    </div>
     <div class="wave-footer">
+        <div class="monitor-level">
+            <div class="monitor-knob" role="slider" tabindex="0" aria-label="Chopper listening volume only" aria-valuemin="-60" aria-valuemax="0" aria-valuenow="0"></div>
+            <div><span>MONITOR LEVEL</span><strong class="monitor-value">0 dB</strong><small>LISTENING ONLY · EXPORT UNAFFECTED</small></div>
+            <button type="button" class="mute" data-action="mute" aria-pressed="false">MUTE</button>
+        </div>
         <div class="wave-hint">DRAG TO SELECT · WHEEL TO ZOOM · SHIFT + WHEEL TO MOVE</div>
         <div class="view-controls" aria-label="Waveform view controls">
             <button type="button" data-action="pan-left" title="Move left">←</button>
@@ -56,6 +72,15 @@ canvas {
     text-align: right;
 }
 .wave-footer { display:flex; align-items:center; justify-content:flex-end; gap:12px; padding-top:7px; }
+.monitor-level { display:grid; grid-template-columns:44px auto 48px; align-items:center; gap:8px; margin-right:auto; padding:5px 6px; border:1px solid rgba(216,201,167,.18); background:rgba(48,37,27,.34); }
+.monitor-knob { --angle:135deg; position:relative; width:38px; height:38px; border:2px solid #77766b; border-radius:50%; background:radial-gradient(circle at 36% 30%,#69685f 0 6%,transparent 7%),radial-gradient(circle,#343631 0 50%,#20221e 51% 68%,#77766b 69% 72%,#171815 73%); box-shadow:inset 0 0 0 2px rgba(0,0,0,.3),0 3px 5px rgba(0,0,0,.42); cursor:ns-resize; transform:rotate(var(--angle)); }
+.monitor-knob::after { content:""; position:absolute; top:4px; left:50%; width:2px; height:12px; background:#eee3c7; transform:translateX(-50%); }
+.monitor-knob:focus { outline:2px solid rgba(217,154,69,.6); outline-offset:2px; }
+.monitor-level div:nth-child(2)>span,.monitor-level small { display:block; color:rgba(216,201,167,.58); font:600 7px "IBM Plex Mono",monospace; letter-spacing:.08em; white-space:nowrap; }
+.monitor-level strong { display:block; margin:2px 0; color:#d99a45; font:600 10px "IBM Plex Mono",monospace; }
+.monitor-level small { color:rgba(216,201,167,.35); font-size:6px; }
+.monitor-level .mute { min-height:27px; padding:0 7px; border:1px solid rgba(216,201,167,.24); border-radius:2px; background:#1c281e; color:#d8c9a7; font:700 7px "IBM Plex Sans",sans-serif; cursor:pointer; }
+.monitor-level .mute.active { border-color:#b85f3d; color:#d77961; background:rgba(184,95,61,.12); }
 .view-controls { display:flex; gap:5px; }
 .view-controls button {
     width:30px;
@@ -103,8 +128,16 @@ canvas {
     box-shadow: 0 0 0 2px rgba(217,154,69,.20), 0 2px 0 #765326;
     transform: translateY(1px);
 }
+.edge-fade { display:flex; align-items:center; gap:10px; margin-top:8px; padding:7px 9px; border:1px solid rgba(216,201,167,.14); background:rgba(48,37,27,.30); }
+.edge-fade>span,.edge-fade small { color:rgba(216,201,167,.56); font:600 7px "IBM Plex Mono",monospace; letter-spacing:.09em; }
+.edge-fade>div { display:flex; gap:4px; }
+.edge-fade button { min-width:34px; height:25px; padding:0 6px; border:1px solid rgba(216,201,167,.20); border-radius:2px; background:#19221b; color:rgba(216,201,167,.58); font:700 7px "IBM Plex Mono",monospace; cursor:pointer; }
+.edge-fade button:hover { border-color:#d99a45; color:#eee3c7; }
+.edge-fade button.active { border-color:#d99a45; background:rgba(217,154,69,.13); color:#d99a45; box-shadow:inset 2px 0 0 #d99a45; }
+.edge-fade small { margin-left:auto; color:rgba(216,201,167,.34); font-size:6px; }
 .selection-time { color:#d99a45; font:600 11px "IBM Plex Mono",monospace; }
 audio { display:none; }
+@media(max-width:760px){.wave-toolbar{flex-wrap:wrap}.wave-toolbar button.apply{width:100%;margin-left:0}.edge-fade{flex-wrap:wrap}.edge-fade small{width:100%;margin-left:0}.wave-footer{flex-wrap:wrap;justify-content:flex-start}.monitor-level{width:100%;grid-template-columns:44px 1fr 48px}.wave-hint{text-align:left}.view-controls{margin-left:auto}}
 """
 
 WAVEFORM_JS = """
@@ -122,6 +155,8 @@ export default function(component) {
     const panRightButton = parentElement.querySelector('[data-action="pan-right"]');
     const zoomOutButton = parentElement.querySelector('[data-action="zoom-out"]');
     const zoomInButton = parentElement.querySelector('[data-action="zoom-in"]');
+    const monitorKnob = parentElement.querySelector('.monitor-knob');
+    const fadeButtons = [...parentElement.querySelectorAll('[data-fade]')];
     audio.src = data.audio_url;
     const peaks = data.peaks;
     const duration = data.duration;
@@ -133,6 +168,15 @@ export default function(component) {
     let anchorTime = 0;
     let originalStart = start;
     let originalEnd = end;
+    let pointerX = 0;
+    let autoPanFrame = null;
+    let lastAutoPanTime = 0;
+    let monitorState = parentElement.__vsChopperMonitor;
+    if (!monitorState) {
+        monitorState = { db: 0, muted: false, fadeMs: 10 };
+        parentElement.__vsChopperMonitor = monitorState;
+    }
+    if (!Number.isFinite(monitorState.fadeMs)) monitorState.fadeMs = 10;
     let playingSelection = false;
     let loopSelection = false;
     let playheadTime = null;
@@ -241,23 +285,81 @@ export default function(component) {
 
     function commitSelection() {
         if (end - start < 0.1) end = Math.min(duration, start + 0.1);
+        const commitId = Date.now();
         setStateValue('selection', {
             start,
             end,
             view_start: viewStart,
             view_end: viewEnd,
+            commit_id: commitId,
+            fade_ms: monitorState.fadeMs,
         });
     }
 
     function markSelectionDirty() {
-        applyButton.disabled = false;
+        applyButton.disabled = Boolean(data.tray_full);
         applyButton.classList.remove('selection-applied');
-        applyButton.textContent = 'USE SELECTION';
+        applyButton.textContent = data.tray_full ? `TRAY FULL / ${data.tray_count} OF 4` : 'USE SELECTION';
+    }
+
+    function stopAutoPan() {
+        if (autoPanFrame !== null) cancelAnimationFrame(autoPanFrame);
+        autoPanFrame = null;
+        lastAutoPanTime = 0;
+    }
+
+    function autoPanVelocity() {
+        if (!dragMode) return 0;
+        const box = canvas.getBoundingClientRect();
+        const edgeZone = Math.min(64, box.width * 0.14);
+        const localX = pointerX - box.left;
+        let strength = 0;
+        if (localX < edgeZone) strength = -(1 - clamp(localX / edgeZone, 0, 1));
+        else if (localX > box.width - edgeZone) strength = 1 - clamp((box.width - localX) / edgeZone, 0, 1);
+        const span = viewEnd - viewStart;
+        const speed = dragMode === 'move' ? span * 0.48 : span * 0.24;
+        return strength * speed;
+    }
+
+    function runAutoPan(timestamp) {
+        if (!dragMode) { stopAutoPan(); return; }
+        const velocity = autoPanVelocity();
+        if (lastAutoPanTime && velocity) {
+            const deltaSeconds = Math.min((timestamp - lastAutoPanTime) / 1000, 0.05);
+            const span = viewEnd - viewStart;
+            const requestedShift = velocity * deltaSeconds;
+            const nextViewStart = clamp(viewStart + requestedShift, 0, duration - span);
+            const actualShift = nextViewStart - viewStart;
+            if (actualShift) {
+                viewStart = nextViewStart;
+                viewEnd = viewStart + span;
+                if (dragMode === 'move') {
+                    start = clamp(start + actualShift, 0, duration - (end - start));
+                    end = start + (originalEnd - originalStart);
+                    originalStart += actualShift;
+                    originalEnd += actualShift;
+                    anchorTime += actualShift;
+                } else if (dragMode === 'start') {
+                    start = clamp(start + actualShift, 0, end - 0.1);
+                } else if (dragMode === 'end') {
+                    end = clamp(end + actualShift, start + 0.1, duration);
+                } else if (dragMode === 'new') {
+                    const pointerTime = timeAt(pointerX);
+                    start = Math.min(anchorTime, pointerTime);
+                    end = Math.max(anchorTime, pointerTime);
+                }
+                draw();
+            }
+        }
+        lastAutoPanTime = timestamp;
+        autoPanFrame = requestAnimationFrame(runAutoPan);
     }
 
     canvas.onpointerdown = (event) => {
         markSelectionDirty();
+        stopAutoPan();
         canvas.setPointerCapture(event.pointerId);
+        pointerX = event.clientX;
         const time = timeAt(event.clientX);
         const tolerance = (viewEnd - viewStart) * 0.025;
         originalStart = start;
@@ -272,10 +374,12 @@ export default function(component) {
             end = Math.min(viewEnd, time + 0.1);
         }
         draw();
+        autoPanFrame = requestAnimationFrame(runAutoPan);
     };
 
     canvas.onpointermove = (event) => {
         if (!dragMode) return;
+        pointerX = event.clientX;
         const time = timeAt(event.clientX);
         if (dragMode === 'start') start = clamp(time, viewStart, end - 0.1);
         else if (dragMode === 'end') end = clamp(time, start + 0.1, viewEnd);
@@ -295,8 +399,10 @@ export default function(component) {
         if (!dragMode) return;
         canvas.releasePointerCapture(event.pointerId);
         dragMode = null;
+        stopAutoPan();
         draw();
     };
+    canvas.onpointercancel = () => { dragMode = null; stopAutoPan(); draw(); };
 
     canvas.onwheel = (event) => {
         event.preventDefault();
@@ -337,10 +443,22 @@ export default function(component) {
     panLeftButton.onclick = () => panView(-1);
     panRightButton.onclick = () => panView(1);
 
+    function applyAuditionGain() {
+        const fadeSeconds = Math.min(monitorState.fadeMs / 1000, (end - start) / 4);
+        let fadeFactor = 1;
+        if (playingSelection && fadeSeconds > 0) {
+            const fadeIn = clamp((audio.currentTime - start) / fadeSeconds, 0, 1);
+            const fadeOut = clamp((end - audio.currentTime) / fadeSeconds, 0, 1);
+            fadeFactor = Math.min(fadeIn, fadeOut);
+        }
+        audio.volume = clamp(monitorGain() * fadeFactor, 0, 1);
+        audio.muted = monitorState.muted;
+    }
     playButton.onclick = () => {
         playingSelection = true;
         audio.currentTime = start;
         playheadTime = start;
+        applyAuditionGain();
         audio.play();
         if (animationFrame !== null) cancelAnimationFrame(animationFrame);
         animatePlayhead();
@@ -360,12 +478,22 @@ export default function(component) {
         loopButton.textContent = loopSelection ? '↻ LOOP ON' : '↻ LOOP OFF';
     };
     applyButton.onclick = () => {
-        if (applyButton.disabled) return;
+        if (applyButton.disabled || data.tray_full) return;
         applyButton.disabled = true;
         applyButton.classList.add('selection-applied');
-        applyButton.textContent = '✓ SELECTION APPLIED';
+        applyButton.textContent = '✓ ADDING TO TRAY';
         window.setTimeout(commitSelection, 240);
     };
+    function monitorGain(){return monitorState.db<=-60?0:Math.pow(10,monitorState.db/20)}
+    function updateMonitorLevel(){monitorState.db=clamp(Math.round(monitorState.db),-60,0);monitorKnob.style.setProperty('--angle',`${-135+(monitorState.db+60)/60*270}deg`);monitorKnob.setAttribute('aria-valuenow',String(monitorState.db));parentElement.querySelector('.monitor-value').textContent=monitorState.db<=-60?'−∞ dB':`${monitorState.db} dB`;const muteButton=parentElement.querySelector('[data-action="mute"]');muteButton.classList.toggle('active',monitorState.muted);muteButton.setAttribute('aria-pressed',String(monitorState.muted));muteButton.textContent=monitorState.muted?'UNMUTE':'MUTE';applyAuditionGain()}
+    function setMonitorLevel(value){monitorState.db=value;updateMonitorLevel()}
+    monitorKnob.onwheel=event=>{event.preventDefault();setMonitorLevel(monitorState.db+(event.deltaY<0?2:-2))};
+    monitorKnob.onkeydown=event=>{if(['ArrowUp','ArrowRight'].includes(event.key)){event.preventDefault();setMonitorLevel(monitorState.db+1)}if(['ArrowDown','ArrowLeft'].includes(event.key)){event.preventDefault();setMonitorLevel(monitorState.db-1)}if(event.key==='Home'){event.preventDefault();setMonitorLevel(-60)}if(event.key==='End'){event.preventDefault();setMonitorLevel(0)}};
+    monitorKnob.onpointerdown=event=>{monitorKnob.setPointerCapture(event.pointerId);const startY=event.clientY,startDb=monitorState.db;monitorKnob.onpointermove=move=>setMonitorLevel(startDb+(startY-move.clientY)/2);monitorKnob.onpointerup=up=>{monitorKnob.releasePointerCapture(up.pointerId);monitorKnob.onpointermove=null}};
+    parentElement.querySelector('[data-action="mute"]').onclick=()=>{monitorState.muted=!monitorState.muted;updateMonitorLevel()};
+    fadeButtons.forEach(button=>{button.classList.toggle('active',Number(button.dataset.fade)===monitorState.fadeMs);button.onclick=()=>{monitorState.fadeMs=Number(button.dataset.fade);fadeButtons.forEach(item=>item.classList.toggle('active',item===button));applyAuditionGain()}});
+    applyButton.disabled=Boolean(data.tray_full);applyButton.classList.remove('selection-applied');applyButton.textContent=data.tray_full?`TRAY FULL / ${data.tray_count} OF 4`:'USE SELECTION';
+    updateMonitorLevel();
     audio.ontimeupdate = () => {
         if (playingSelection && audio.currentTime >= end) {
             if (loopSelection) {
@@ -387,6 +515,7 @@ export default function(component) {
     function animatePlayhead() {
         if (!playingSelection) return;
         if (audio.currentTime >= end && loopSelection) audio.currentTime = start;
+        applyAuditionGain();
         playheadTime = audio.currentTime;
         draw();
         animationFrame = requestAnimationFrame(animatePlayhead);
@@ -398,6 +527,7 @@ export default function(component) {
     return () => {
         observer.disconnect();
         audio.pause();
+        stopAutoPan();
         if (animationFrame !== null) cancelAnimationFrame(animationFrame);
     };
 }
@@ -405,7 +535,7 @@ export default function(component) {
 
 
 _interactive_waveform = st.components.v2.component(
-    "vibes_supplier_waveform_v6",
+    "vibes_supplier_waveform_v10",
     html=WAVEFORM_HTML,
     css=WAVEFORM_CSS,
     js=WAVEFORM_JS,
@@ -417,6 +547,8 @@ def interactive_waveform(
     selection: tuple[float, float],
     view: tuple[float, float],
     browser_audio: bytes,
+    *,
+    tray_count: int,
 ) -> dict[str, float]:
     """Render the browser waveform and return committed selection state."""
     default = {
@@ -425,10 +557,12 @@ def interactive_waveform(
             "end": selection[1],
             "view_start": view[0],
             "view_end": view[1],
+            "commit_id": 0,
+            "fade_ms": 10,
         }
     }
     result = _interactive_waveform(
-        key="audio_chopper_interactive_waveform_v6",
+        key="audio_chopper_interactive_waveform_v10",
         data={
             "peaks": waveform.peaks,
             "duration": waveform.duration_seconds,
@@ -438,9 +572,11 @@ def interactive_waveform(
                 "data:audio/mpeg;base64,"
                 + base64.b64encode(browser_audio).decode("ascii")
             ),
+            "tray_count": tray_count,
+            "tray_full": tray_count >= 4,
         },
         default=default,
-        height=330,
+        height=390,
         on_selection_change=lambda: None,
     )
     value: Any = getattr(result, "selection", None)
