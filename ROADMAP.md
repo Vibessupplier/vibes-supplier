@@ -35,6 +35,8 @@
 - [x] Invalidate preview when speed or pitch changes
 - [x] Improve Speed Changer controls and player UI
 - [x] Live browser-side Speed Changer deck with waveform and playhead
+- [x] Start live audition at the detected BPM and neutral `1.000×` speed
+- [x] Listening-only Speed Deck Monitor Level and Mute
 - [x] Audition Follow Speed and Keep Original Pitch without server previews
 - [x] Accessible analog Custom Pitch knob
 
@@ -176,8 +178,11 @@
   horizontal navigation, synchronized playback, looping, reusable selection,
   a temporary four-slot Sample Tray, and combined ZIP export.
 - Speed Changer has a browser-side Live Speed Deck for instant tempo audition,
-  Follow Speed, Keep Original Pitch, and an analog Custom Pitch knob. Only
-  Custom Pitch requires a rendered preview before final FFmpeg export.
+  Follow Speed, Keep Original Pitch, an analog Custom Pitch knob, and a
+  listening-only Monitor Level/Mute. New uploads start with Target BPM equal to
+  detected Original BPM at `1.000×`; correcting Original BPM also preserves
+  neutral speed. Only Custom Pitch requires a rendered preview before final
+  FFmpeg export.
 - Mastering Analyzer Single Master has a live Web Audio monitor with waveform,
   spectrum, Mono Check, analog Peak/RMS meters, full-height digital L/R meters,
   vectorscope, unified stereo/phase visualization, selectable response, and a

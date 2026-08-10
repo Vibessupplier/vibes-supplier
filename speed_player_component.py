@@ -16,6 +16,11 @@ SPEED_PLAYER_HTML = """
         <button type="button" data-action="stop">■ STOP</button>
         <span class="time-readout">0:00 / 0:00</span>
         <span class="live-status">LIVE AUDITION</span>
+        <div class="monitor-level">
+            <div class="monitor-knob" role="slider" tabindex="0" aria-label="Speed deck listening volume only" aria-valuemin="-60" aria-valuemax="0" aria-valuenow="0"></div>
+            <div><span>MONITOR LEVEL</span><strong class="monitor-value">0 dB</strong><small>LISTENING ONLY · EXPORT UNAFFECTED</small></div>
+            <button type="button" class="mute" data-action="mute" aria-pressed="false">MUTE</button>
+        </div>
     </div>
     <div class="control-grid">
         <div class="control-block bpm-source">
@@ -68,6 +73,15 @@ button,input { font:inherit; }
 .transport button:hover,.pitch-modes button:hover,.nudge:hover { border-color:#d99a45; color:#eee3c7; }
 .time-readout { margin-left:4px; color:#d99a45; font:600 11px SFMono-Regular,Menlo,monospace; }
 .live-status { margin-left:auto; color:#87966c; font:600 9px SFMono-Regular,Menlo,monospace; letter-spacing:.10em; text-align:right; }
+.monitor-level { display:grid; grid-template-columns:44px auto 48px; align-items:center; gap:8px; padding:5px 6px; border:1px solid rgba(216,201,167,.18); background:rgba(48,37,27,.34); }
+.monitor-knob { --angle:135deg; position:relative; width:38px; height:38px; border:2px solid #77766b; border-radius:50%; background:radial-gradient(circle at 36% 30%,#69685f 0 6%,transparent 7%),radial-gradient(circle,#343631 0 50%,#20221e 51% 68%,#77766b 69% 72%,#171815 73%); box-shadow:inset 0 0 0 2px rgba(0,0,0,.3),0 3px 5px rgba(0,0,0,.42); cursor:ns-resize; transform:rotate(var(--angle)); }
+.monitor-knob::after { content:""; position:absolute; top:4px; left:50%; width:2px; height:12px; background:#eee3c7; transform:translateX(-50%); }
+.monitor-knob:focus { outline:2px solid rgba(217,154,69,.6); outline-offset:2px; }
+.monitor-level div:nth-child(2)>span,.monitor-level small { display:block; color:rgba(216,201,167,.58); font:600 7px SFMono-Regular,Menlo,monospace; letter-spacing:.08em; white-space:nowrap; }
+.monitor-level strong { display:block; margin:2px 0; color:#d99a45; font:600 10px SFMono-Regular,Menlo,monospace; }
+.monitor-level small { color:rgba(216,201,167,.35); font-size:6px; }
+.transport .monitor-level .mute { min-height:27px; padding:0 7px; font-size:7px; }
+.transport .monitor-level .mute.active { border-color:#b85f3d; color:#d77961; background:rgba(184,95,61,.12); }
 .control-grid { display:grid; grid-template-columns:145px 1fr; gap:10px; }
 .control-block { padding:11px; border:1px solid rgba(216,201,167,.17); background:rgba(28,40,30,.82); box-shadow:inset 0 0 0 2px rgba(0,0,0,.12); }
 .control-block label { display:flex; justify-content:space-between; margin-bottom:8px; color:#d8c9a7; font:600 10px SFMono-Regular,Menlo,monospace; letter-spacing:.10em; }
@@ -94,7 +108,8 @@ button,input { font:inherit; }
 .unit-actions .preview { color:#eee3c7; border-color:rgba(217,154,69,.44); }
 .unit-actions .process { border-color:#d8c9a7; background:linear-gradient(#e4d5b3,#cdbc94); color:#101a14; box-shadow:0 3px 0 #6f6149; }
 .unit-actions button:active { transform:translateY(2px); box-shadow:0 1px 0 #5d513d; }
-@media(max-width:620px){ .control-grid{grid-template-columns:1fr}.pitch-modes{grid-template-columns:1fr}.custom-pitch{grid-template-columns:36px 112px 36px}.custom-pitch p{display:none}.unit-actions{flex-direction:column}.unit-actions button{width:100%}.live-status{max-width:130px} }
+@media(max-width:850px){ .transport{flex-wrap:wrap}.monitor-level{margin-left:auto} }
+@media(max-width:620px){ .control-grid{grid-template-columns:1fr}.pitch-modes{grid-template-columns:1fr}.custom-pitch{grid-template-columns:36px 112px 36px}.custom-pitch p{display:none}.unit-actions{flex-direction:column}.unit-actions button{width:100%}.live-status{width:100%;max-width:none;margin-left:0;text-align:left}.monitor-level{width:100%;margin-left:0;grid-template-columns:44px 1fr 48px} }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 """
 
@@ -117,6 +132,7 @@ export default function(component) {
     const pitchSummary = q('.pitch-summary');
     const customPanel = q('.custom-pitch');
     const knob = q('.knob');
+    const monitorKnob = q('.monitor-knob');
     const pitchReadout = q('.pitch-readout');
     const previewButton = q('[data-action="preview"]');
     const processButton = q('[data-action="process"]');
@@ -131,6 +147,8 @@ export default function(component) {
             targetBpm: Number(data.settings.target_bpm),
             mode: data.settings.pitch_mode,
             pitch: Number(data.settings.pitch_semitones || 0),
+            monitorDb: 0,
+            muted: false,
             peaks: null,
             animationFrame: null,
         };
@@ -158,6 +176,21 @@ export default function(component) {
         const minutes = Math.floor(seconds / 60);
         return `${minutes}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
     }
+
+    function monitorGain() { return state.monitorDb <= -60 ? 0 : Math.pow(10, state.monitorDb / 20); }
+    function updateMonitorLevel() {
+        state.monitorDb = clamp(Math.round(state.monitorDb), -60, 0);
+        monitorKnob.style.setProperty('--angle', `${-135 + (state.monitorDb + 60) / 60 * 270}deg`);
+        monitorKnob.setAttribute('aria-valuenow', String(state.monitorDb));
+        q('.monitor-value').textContent = state.monitorDb <= -60 ? '−∞ dB' : `${state.monitorDb} dB`;
+        const mute = q('[data-action="mute"]');
+        mute.classList.toggle('active', state.muted);
+        mute.setAttribute('aria-pressed', String(state.muted));
+        mute.textContent = state.muted ? 'UNMUTE' : 'MUTE';
+        audio.volume = monitorGain();
+        audio.muted = state.muted;
+    }
+    function setMonitorLevel(value) { state.monitorDb = value; updateMonitorLevel(); }
 
     function currentSpeed() { return state.targetBpm / state.sourceBpm; }
     function displayedPitch() {
@@ -219,7 +252,7 @@ export default function(component) {
     q('[data-action="stop"]').onclick=()=>{ audio.pause(); if(state.animationFrame)cancelAnimationFrame(state.animationFrame); state.animationFrame=null; draw(); };
     audio.onended=()=>{ state.animationFrame=null; draw(); };
     canvas.onclick=event=>{ if(!audio.duration)return; const box=canvas.getBoundingClientRect(); audio.currentTime=clamp((event.clientX-box.left)/box.width,0,1)*audio.duration; draw(); };
-    sourceInput.onchange=()=>{ state.sourceBpm=Number(sourceInput.value); updateControls(); };
+    sourceInput.onchange=()=>{ state.sourceBpm=Number(sourceInput.value); state.targetBpm=state.sourceBpm; updateControls(); };
     targetInput.oninput=()=>{ state.targetBpm=Number(targetInput.value); updateControls(); };
     modeButtons.forEach(button=>button.onclick=()=>{ state.mode=button.dataset.mode; updateControls(); });
 
@@ -229,20 +262,35 @@ export default function(component) {
     knob.onwheel=event=>{ event.preventDefault(); setPitch(state.pitch+(event.deltaY<0?.5:-.5)); };
     knob.onkeydown=event=>{ if(['ArrowUp','ArrowRight'].includes(event.key)){event.preventDefault();setPitch(state.pitch+.5);} if(['ArrowDown','ArrowLeft'].includes(event.key)){event.preventDefault();setPitch(state.pitch-.5);} };
     knob.onpointerdown=event=>{ knob.setPointerCapture(event.pointerId); const startY=event.clientY; const startPitch=state.pitch; knob.onpointermove=move=>setPitch(startPitch+(startY-move.clientY)/8); knob.onpointerup=up=>{knob.releasePointerCapture(up.pointerId);knob.onpointermove=null;}; };
+    monitorKnob.onwheel=event=>{ event.preventDefault(); setMonitorLevel(state.monitorDb+(event.deltaY<0?2:-2)); };
+    monitorKnob.onkeydown=event=>{ if(['ArrowUp','ArrowRight'].includes(event.key)){event.preventDefault();setMonitorLevel(state.monitorDb+1);} if(['ArrowDown','ArrowLeft'].includes(event.key)){event.preventDefault();setMonitorLevel(state.monitorDb-1);} if(event.key==='Home'){event.preventDefault();setMonitorLevel(-60);} if(event.key==='End'){event.preventDefault();setMonitorLevel(0);} };
+    monitorKnob.onpointerdown=event=>{ monitorKnob.setPointerCapture(event.pointerId); const startY=event.clientY; const startDb=state.monitorDb; monitorKnob.onpointermove=move=>setMonitorLevel(startDb+(startY-move.clientY)/2); monitorKnob.onpointerup=up=>{monitorKnob.releasePointerCapture(up.pointerId);monitorKnob.onpointermove=null;}; };
+    q('[data-action="mute"]').onclick=()=>{ state.muted=!state.muted; updateMonitorLevel(); };
     previewButton.onclick=()=>setTriggerValue('preview',payload());
     processButton.onclick=()=>setTriggerValue('process',payload());
     new ResizeObserver(draw).observe(canvas);
-    updateControls(); draw();
+    updateControls(); updateMonitorLevel(); draw();
 }
 """
 
 
 _speed_player = st.components.v2.component(
-    "vibes_supplier_speed_player_v1",
+    "vibes_supplier_speed_player_v2",
     html=SPEED_PLAYER_HTML,
     css=SPEED_PLAYER_CSS,
     js=SPEED_PLAYER_JS,
 )
+
+
+def initial_speed_deck_settings(detected_bpm: float) -> dict[str, Any]:
+    """Start live audition at the detected tempo without changing the audio."""
+    source_bpm = round(float(detected_bpm), 1)
+    return {
+        "source_bpm": source_bpm,
+        "target_bpm": source_bpm,
+        "pitch_mode": "Follow speed",
+        "pitch_semitones": 0.0,
+    }
 
 
 def live_speed_player(
@@ -263,7 +311,7 @@ def live_speed_player(
             "audio_id": audio_id,
             "settings": settings,
         },
-        height=590,
+        height=630,
         on_preview_change=on_preview_change,
         on_process_change=on_process_change,
     )

@@ -83,7 +83,10 @@
 - The Speed Changer uses a reusable browser-side Live Speed Deck for waveform,
   playback, live BPM/speed changes, Follow Speed, and Keep Original Pitch.
   Custom Pitch uses an accessible analog knob; its accurate 20-second preview
-  and all final exports remain authoritative on Python/FFmpeg.
+  and all final exports remain authoritative on Python/FFmpeg. New uploads must
+  start with Target BPM equal to detected Original BPM at `1.000×`; correcting
+  Original BPM should also restore neutral speed. Monitor Level and Mute affect
+  browser listening only and must never enter preview or export settings.
 - Keep product analytics centralized and optional. Never send uploaded audio,
   filenames, raw cookies, IP addresses, or other unnecessary personal data.
 - Keep public feedback account-free and rate-limited. Submit only the category,
@@ -226,7 +229,10 @@
 - The Audio Chopper component currently uses the v6 component name/key. Its
   fixed height is 330 px so the accessible arrow and plus/minus controls are not
   clipped on Streamlit Cloud.
-- The Speed Changer Live Deck currently uses the v1 component name/key.
+- The Speed Changer Live Deck currently uses the v2 component name/key. It
+  starts at the detected BPM and `1.000×`, resets Target BPM to a manually
+  corrected Original BPM, and includes listening-only Monitor Level/Mute that
+  cannot affect preview or export processing.
 - The Mastering Monitor currently uses the v10 component name/key. Its live
   spectrum and vectorscope remain fluid while the user selects Steady,
   Balanced, or Fast meter response. Its Peak/RMS meters use restrained black
@@ -242,7 +248,7 @@
   views plus explicit feedback submissions. Analytics must remain optional and
   must never receive audio, filenames, raw cookies, or location data.
 - The public feedback contact is `vibes.supplier@gmail.com`.
-- The current automated suite contains 58 tests and passes with
+- The current automated suite contains 61 tests and passes with
   `.venv/bin/python -m unittest discover -s tests -q`. The local virtual
   environment does not currently include pytest.
 

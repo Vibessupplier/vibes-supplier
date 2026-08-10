@@ -6,18 +6,17 @@ import streamlit as st
 from analytics import track_event, track_page_view
 from audio_analysis import detect_bpm_from_file
 from audio_effects import (
-    MAX_SPEED_FACTOR,
     create_speed_player_audio,
     create_speed_preview,
     change_speed,
     resolve_speed_settings,
 )
 from audio_engine import AudioProcessingError
-from speed_player_component import live_speed_player
+from speed_player_component import initial_speed_deck_settings, live_speed_player
 from ui import show_header, show_tool_header
 
 
-SPEED_PLAYER_KEY = "speed_live_player_v1"
+SPEED_PLAYER_KEY = "speed_live_player_v2"
 PENDING_ACTION_KEY = "speed_pending_action"
 
 
@@ -84,15 +83,10 @@ if audio_file is not None:
                 st.code(str(error))
                 st.stop()
 
-        source_bpm = round(detected_bpm, 1)
-        target_bpm = round(min(source_bpm * 1.20, source_bpm * MAX_SPEED_FACTOR), 1)
         st.session_state["speed_browser_audio"] = browser_audio
-        st.session_state["speed_live_settings"] = {
-            "source_bpm": source_bpm,
-            "target_bpm": target_bpm,
-            "pitch_mode": "Follow speed",
-            "pitch_semitones": 0.0,
-        }
+        st.session_state["speed_live_settings"] = initial_speed_deck_settings(
+            detected_bpm
+        )
         st.session_state.pop("speed_preview", None)
         st.session_state.pop("speed_result", None)
         st.session_state.pop(PENDING_ACTION_KEY, None)
