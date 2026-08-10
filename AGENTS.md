@@ -175,7 +175,7 @@
   Modal GPU processing service is being connected to the application.
 - Keep pitch and tempo processing reusable so future focused, SEO-friendly tool
   pages can share the same engine without duplicating logic.
-- Audio Chopper Beta provides a high-resolution interactive waveform, direct
+- Audio Chopper provides a high-resolution interactive waveform, direct
   range selection, mouse-wheel and button zoom, horizontal and edge-triggered
   navigation, synchronized playhead, Loop Selection, listening-only Monitor
   Level, and live edge-fade audition. `Use Selection` immediately creates the
@@ -206,7 +206,7 @@
 
 - Public navigation is grouped into HOME, ANALYZE, TRANSFORM, SEPARATE, and
   SUPPORT. The live tools are Key & BPM Finder, Speed Changer, Mastering
-  Analyzer, Audio Chopper Beta, and Feedback.
+  Analyzer, Audio Chopper, and Feedback.
 - The shared visual direction is **Jungle Analog**: a sophisticated analog audio
   laboratory hidden in a humid jungle around 1975–1985. Use Jungle Night/Deep
   Forest, walnut, oxidized metal, Old Paper/Warm Cream, olive/moss, and VU Amber.

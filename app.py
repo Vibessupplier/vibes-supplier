@@ -40,7 +40,7 @@ pages = {
         ),
         st.Page(
             "pages/5_Audio_Chopper.py",
-            title="Audio Chopper · Beta",
+            title="Audio Chopper",
             url_path="audio-chopper",
         ),
     ],

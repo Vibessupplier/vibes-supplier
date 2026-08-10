@@ -114,7 +114,7 @@
 ---
 
 ## Future Ideas
-- [x] Audio Chopper Beta page
+- [x] Audio Chopper page
 - [x] High-resolution waveform data and precise sample trimming
 - [x] Browser-side original-track and selected-fragment audition
 - [x] Export user-selected samples in MP3
@@ -178,7 +178,7 @@
 - Vocal Split works with a high-quality private Modal/Demucs pipeline, but its
   public processing action is intentionally disabled while cost and access
   controls are designed.
-- Audio Chopper Beta has direct waveform selection, wheel and button zoom,
+- Audio Chopper has direct waveform selection, wheel and button zoom,
   horizontal and automatic edge navigation, synchronized playback, looping,
   listening-only Monitor Level, reusable one-click selection, optional edge
   fades, a compact four-slot LCD Sample Memory, and combined ZIP export.
