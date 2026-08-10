@@ -132,6 +132,15 @@
 - [x] Download all saved samples together as `vibes_supplier_samples.zip`
 - [ ] Direct drag-to-pan waveform navigation
 - [ ] Premium WAV and FLAC sample export
+- [x] Stereo / Mono Converter standalone page
+- [x] Split a stereo source into independent lossless L and R mono files
+- [x] Interleave two mono sources as assigned L/R channels in one stereo file
+- [x] WAV and MP3 output with Match Source and 128/192/256/320 kbps selection
+- [x] Preserve sample rate and PCM bit depth for compatible lossless exports
+- [x] Warn clearly when lossy formats require re-encoding
+- [x] Preview L/R routing, swap channel assignment, and download split files together
+- [x] Handle unequal mono durations explicitly, with visible silence-padding behavior
+- [ ] Universal audio format converter for WAV, MP3, FLAC, M4A, and additional formats
 - [ ] Multi-stem separation (vocals, drums, bass, and other)
 - [ ] Spectrogram
 - [ ] AI Mix Assistant
@@ -163,6 +172,7 @@
 
 - [ ] Validate Jungle Analog initial loading and embedded artwork on Streamlit Cloud
 - [ ] Test the complete public flow on desktop and mobile
+- [ ] Validate Stereo / Mono Converter routing, formats, ZIP, and patch-bay layout online
 - [ ] Add Audio Chopper direct drag-to-pan navigation
 - [ ] Build the Delay Time Calculator as a focused standalone tool
 - [ ] Define and validate the Reverb Time Calculator formulas and guidance
@@ -173,8 +183,8 @@
 
 ## Current Public Beta State
 
-- Home, Key & BPM Finder, Speed Changer, Mastering Analyzer, Audio Chopper, and
-  Feedback are available through the sidebar.
+- Home, Key & BPM Finder, Speed Changer, Mastering Analyzer, Audio Chopper,
+  Stereo / Mono Converter, and Feedback are available through the sidebar.
 - Vocal Split works with a high-quality private Modal/Demucs pipeline, but its
   public processing action is intentionally disabled while cost and access
   controls are designed.
@@ -182,6 +192,10 @@
   horizontal and automatic edge navigation, synchronized playback, looping,
   listening-only Monitor Level, reusable one-click selection, optional edge
   fades, a compact four-slot LCD Sample Memory, and combined ZIP export.
+- Stereo / Mono Converter splits stereo into discrete L/R mono files or
+  interleaves two mono sources as stereo. It supports WAV and MP3, Match Source
+  bitrate, advanced MP3 bitrates, Swap L/R, silence-padding for unequal lengths,
+  individual/ZIP downloads, and a Jungle Analog routing patch bay.
 - Speed Changer has a browser-side Live Speed Deck for instant tempo audition,
   Follow Speed, Keep Original Pitch, an analog Custom Pitch knob, and a
   listening-only Monitor Level/Mute. New uploads start with Target BPM equal to

@@ -43,6 +43,11 @@ pages = {
             title="Audio Chopper",
             url_path="audio-chopper",
         ),
+        st.Page(
+            "pages/7_Stereo_Mono_Converter.py",
+            title="Stereo / Mono Converter",
+            url_path="stereo-mono-converter",
+        ),
     ],
     "SEPARATE": [
         st.Page(

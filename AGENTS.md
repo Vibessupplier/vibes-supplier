@@ -56,6 +56,10 @@
   path and load the first free slot. Saved clips live only in the temporary
   four-slot LCD Sample Memory, share one compact browser player, and download
   together as a ZIP. Direct background drag-to-pan remains a future enhancement.
+- The Stereo / Mono Converter is a focused Transform tool. Keep channel probing,
+  validation, bitrate policy, splitting, interleaving, and silence-padding in
+  reusable engine/product modules rather than the page. WAV is the lossless
+  option; MP3 Match Source must not claim that a higher bitrate restores quality.
 - The Mastering Analyzer is a focused Analyze tool. Keep LUFS,
   peak/true-peak, dynamic-range, stereo-width, phase-correlation, and mono
   compatibility measurements in reusable analysis modules rather than the page.
@@ -116,6 +120,7 @@
 - `audio_chopper.py`: waveform extraction and selected-fragment export.
 - `waveform_component.py`: browser-side interactive waveform and playback.
 - `sample_tray_component.py`: compact browser-side four-slot Sample Memory.
+- `stereo_converter.py`: product-level channel-routing and export policy.
 - `speed_player_component.py`: browser-side live Speed Changer deck and analog
   pitch controls.
 - `mastering_analysis.py`: loudness, stereo, and static spectral analysis.
@@ -182,6 +187,10 @@
   authoritative FFmpeg sample in the first free slot. The compact four-slot LCD
   Sample Memory supports inline rename, shared playback, removal, and ZIP
   download without native per-sample audio players.
+- Stereo / Mono Converter provides explicit Stereo → L Mono + R Mono and
+  L Mono + R Mono → Stereo flows. It supports WAV/MP3, Match Source plus
+  128/192/256/320 kbps, Swap L/R, visible silence-padding behavior, result
+  monitoring, separate/ZIP downloads, and a restrained analog patch-bay diagram.
 - The Mastering Analyzer now provides LUFS, dBFS/true peak, dynamics, stereo
   measurements, mono compatibility, A/B reference comparison, Volume Match,
   static spectral balance, and a live single-master Web Audio monitor. The live
@@ -206,7 +215,7 @@
 
 - Public navigation is grouped into HOME, ANALYZE, TRANSFORM, SEPARATE, and
   SUPPORT. The live tools are Key & BPM Finder, Speed Changer, Mastering
-  Analyzer, Audio Chopper, and Feedback.
+  Analyzer, Audio Chopper, Stereo / Mono Converter, and Feedback.
 - The shared visual direction is **Jungle Analog**: a sophisticated analog audio
   laboratory hidden in a humid jungle around 1975–1985. Use Jungle Night/Deep
   Forest, walnut, oxidized metal, Old Paper/Warm Cream, olive/moss, and VU Amber.
@@ -251,17 +260,17 @@
   views plus explicit feedback submissions. Analytics must remain optional and
   must never receive audio, filenames, raw cookies, or location data.
 - The public feedback contact is `vibes.supplier@gmail.com`.
-- The current automated suite contains 71 tests and passes with
+- The current automated suite contains 75 tests and passes with
   `.venv/bin/python -m unittest discover -s tests -q`. The local virtual
   environment does not currently include pytest.
 
 ## Recommended next session
 
-1. Verify the deployed Jungle Analog visuals, four-slot Audio Chopper Sample Memory, Live
-   Speed Deck, and single-master VS Mastering Monitor on desktop and mobile.
+1. Verify the deployed Stereo / Mono Converter routing, formats, downloads, and
+   patch-bay layout on desktop and mobile.
 2. Choose one focused increment: Delay Time Calculator, Reverb Time Calculator
    formula design, or Audio Chopper drag-to-pan.
 3. Prefer the Delay Time Calculator first: it is useful, SEO-focused, instant,
    and has no audio-processing cost.
-4. Keep the increment small, run the 71-test suite, syntax and diff checks, then
+4. Keep the increment small, run the 75-test suite, syntax and diff checks, then
    wait for explicit product-owner approval before committing or pushing.
