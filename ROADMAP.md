@@ -148,22 +148,24 @@
 
 ---
 
-## Future Timing Calculators
+## Timing Calculators
 
-- [ ] Delay Time Calculator page
-- [ ] Convert BPM into milliseconds for whole, half, quarter, eighth, and
-  sixteenth-note delays
-- [ ] Include dotted and triplet delay subdivisions
+- [x] Combined Delay & Reverb Calculator page in the new TOOLS navigation group
+- [x] Convert BPM into milliseconds for whole, half, quarter, eighth,
+  sixteenth, and thirty-second-note delays
+- [x] Include straight, dotted, and triplet delay subdivisions
+- [x] Browser-side claquette with Play/Stop and first-step accent
+- [x] Editable BPM display with Tap Tempo, plus/minus, wheel, typing, and vertical drag
+- [x] Selectable 4/8/16/32-step visual cycle and detailed click/echo division audition
 - [ ] Present left/right and ping-pong timing combinations without prescribing
   a single creative setting
-- [ ] Reverb Time Calculator page
-- [ ] Convert BPM and rhythmic subdivisions into useful pre-delay starting
+- [x] Convert BPM and rhythmic subdivisions into useful reverb pre-delay starting
   points
-- [ ] Suggest tempo-synchronized decay ranges for short, medium, and long
+- [x] Suggest tempo-synchronized decay ranges for short, medium, and long
   spaces
-- [ ] Explain that reverb timings are starting points shaped by arrangement,
+- [x] Explain that reverb timings are starting points shaped by arrangement,
   genre, source material, and creative intent
-- [ ] Keep both calculators instant and browser-friendly without requiring an
+- [x] Keep the calculator instant and browser-friendly without requiring an
   audio upload
 
 ---
@@ -174,8 +176,7 @@
 - [ ] Test the complete public flow on desktop and mobile
 - [ ] Validate Stereo / Mono Converter routing, formats, ZIP, and patch-bay layout online
 - [ ] Add Audio Chopper direct drag-to-pan navigation
-- [ ] Build the Delay Time Calculator as a focused standalone tool
-- [ ] Define and validate the Reverb Time Calculator formulas and guidance
+- [ ] Validate Delay & Reverb Calculator timing, controls, and mobile layout online
 - [ ] Validate the synchronized A/B deck on desktop Edge and mobile browsers
 - [ ] Benchmark Modal with full three-minute MP3 and WAV tracks
 - [ ] Define free and Premium usage limits from measured processing costs
@@ -184,7 +185,8 @@
 ## Current Public Beta State
 
 - Home, Key & BPM Finder, Speed Changer, Mastering Analyzer, Audio Chopper,
-  Stereo / Mono Converter, and Feedback are available through the sidebar.
+  Stereo / Mono Converter, Delay & Reverb Calculator, and Feedback are
+  available through the sidebar.
 - Vocal Split works with a high-quality private Modal/Demucs pipeline, but its
   public processing action is intentionally disabled while cost and access
   controls are designed.
@@ -196,6 +198,10 @@
   interleaves two mono sources as stereo. It supports WAV and MP3, Match Source
   bitrate, advanced MP3 bitrates, Swap L/R, silence-padding for unequal lengths,
   individual/ZIP downloads, and a Jungle Analog routing patch bay.
+- Delay & Reverb Calculator adds the TOOLS group and works without uploads. Its
+  browser-side VS Sync Generator has editable BPM, Tap Tempo, 4/8/16/32-step
+  cycles, detailed straight/dotted/triplet audition, and tempo-derived reverb
+  starting points followed by a complete delay timing bank.
 - Speed Changer has a browser-side Live Speed Deck for instant tempo audition,
   Follow Speed, Keep Original Pitch, an analog Custom Pitch knob, and a
   listening-only Monitor Level/Mute. New uploads start with Target BPM equal to

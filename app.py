@@ -56,6 +56,13 @@ pages = {
             url_path="vocal-split",
         ),
     ],
+    "TOOLS": [
+        st.Page(
+            "pages/8_Delay_Reverb_Calculator.py",
+            title="Delay & Reverb Calculator",
+            url_path="delay-reverb-calculator",
+        ),
+    ],
     "SUPPORT": [
         st.Page(
             "pages/6_Feedback.py",

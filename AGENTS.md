@@ -60,6 +60,10 @@
   validation, bitrate policy, splitting, interleaving, and silence-padding in
   reusable engine/product modules rather than the page. WAV is the lossless
   option; MP3 Match Source must not claim that a higher bitrate restores quality.
+- Delay & Reverb Calculator is an instant TOOLS utility with no upload or server
+  audio processing. Keep timing formulas in `timing_calculator.py`; the v3 Sync
+  Generator owns browser audio, Tap Tempo, BPM gestures, subdivisions, and its
+  4/8/16/32-step display. Reverb results are starting points, not fixed rules.
 - The Mastering Analyzer is a focused Analyze tool. Keep LUFS,
   peak/true-peak, dynamic-range, stereo-width, phase-correlation, and mono
   compatibility measurements in reusable analysis modules rather than the page.
@@ -121,6 +125,8 @@
 - `waveform_component.py`: browser-side interactive waveform and playback.
 - `sample_tray_component.py`: compact browser-side four-slot Sample Memory.
 - `stereo_converter.py`: product-level channel-routing and export policy.
+- `timing_calculator.py`: reusable tempo-derived delay and reverb formulas.
+- `sync_generator_component.py`: browser-side tempo clock and claquette.
 - `speed_player_component.py`: browser-side live Speed Changer deck and analog
   pitch controls.
 - `mastering_analysis.py`: loudness, stereo, and static spectral analysis.
@@ -204,18 +210,20 @@
   meaningful playback drift, supports Original and Volume Match listening, and
   shows authoritative global LUFS/RMS beside live RMS markers. Its Monitor
   Level/Mute is downstream of A/B selection and cannot alter measurements.
-- Future Delay Time and Reverb Time Calculators should be focused standalone
-  tools that work instantly from BPM without an audio upload. Delay must include
-  straight, dotted, and triplet subdivisions. Reverb timings are useful starting
-  points, not a single prescribed creative setting.
+- Delay & Reverb Calculator is one focused TOOLS page that works instantly from
+  BPM without an upload. Reverb starting points appear before the complete delay
+  bank. Its Sync Generator v3 supports typing, plus/minus, wheel, vertical drag,
+  Tap Tempo, detailed straight/dotted/triplet clicks through 1/32, and selectable
+  4/8/16/32-step cycles.
 - Defer accounts, subscriptions, billing, and persistent user files until their
   product and infrastructure requirements are designed.
 
 ## Current handoff state
 
-- Public navigation is grouped into HOME, ANALYZE, TRANSFORM, SEPARATE, and
-  SUPPORT. The live tools are Key & BPM Finder, Speed Changer, Mastering
-  Analyzer, Audio Chopper, Stereo / Mono Converter, and Feedback.
+- Public navigation is grouped into HOME, ANALYZE, TRANSFORM, SEPARATE, TOOLS,
+  and SUPPORT. The live tools are Key & BPM Finder, Speed Changer, Mastering
+  Analyzer, Audio Chopper, Stereo / Mono Converter, Delay & Reverb Calculator,
+  and Feedback.
 - The shared visual direction is **Jungle Analog**: a sophisticated analog audio
   laboratory hidden in a humid jungle around 1975–1985. Use Jungle Night/Deep
   Forest, walnut, oxidized metal, Old Paper/Warm Cream, olive/moss, and VU Amber.
@@ -260,17 +268,15 @@
   views plus explicit feedback submissions. Analytics must remain optional and
   must never receive audio, filenames, raw cookies, or location data.
 - The public feedback contact is `vibes.supplier@gmail.com`.
-- The current automated suite contains 75 tests and passes with
+- The current automated suite contains 79 tests and passes with
   `.venv/bin/python -m unittest discover -s tests -q`. The local virtual
   environment does not currently include pytest.
 
 ## Recommended next session
 
-1. Verify the deployed Stereo / Mono Converter routing, formats, downloads, and
-   patch-bay layout on desktop and mobile.
-2. Choose one focused increment: Delay Time Calculator, Reverb Time Calculator
-   formula design, or Audio Chopper drag-to-pan.
-3. Prefer the Delay Time Calculator first: it is useful, SEO-focused, instant,
-   and has no audio-processing cost.
-4. Keep the increment small, run the 75-test suite, syntax and diff checks, then
+1. Verify the deployed Delay & Reverb Calculator timing, BPM gestures, click
+   subdivisions, and 4/8/16/32-step layout on desktop and mobile.
+2. Choose one focused increment: universal format conversion, Audio Chopper
+   drag-to-pan, or a new producer utility.
+3. Keep the increment small, run the 79-test suite, syntax and diff checks, then
    wait for explicit product-owner approval before committing or pushing.
