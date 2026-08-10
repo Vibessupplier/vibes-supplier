@@ -522,7 +522,7 @@ if audio_file is not None:
         audio_data,
         audio_mime_type(audio_file.name),
         audio_id=f"{audio_file.name}:{audio_file.size}",
-        key=f"mastering_live_monitor_v6_{audio_file.name}_{audio_file.size}",
+        key=f"mastering_live_monitor_v10_{audio_file.name}_{audio_file.size}",
     )
 
     if st.button("ANALYZE MASTER", type="primary"):
