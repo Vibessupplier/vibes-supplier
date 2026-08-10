@@ -219,26 +219,6 @@ def load_design() -> None:
             font-family: var(--font-technical);
         }
 
-        [data-testid="stSidebar"]::after {
-            content: "";
-            position: absolute;
-            z-index: 0;
-            right: -5.2rem;
-            bottom: 1.5rem;
-            width: 12.5rem;
-            height: 23rem;
-            opacity: .21;
-            background:
-                radial-gradient(ellipse at 63% 10%, #667052 0 10%, transparent 10.8%),
-                radial-gradient(ellipse at 34% 25%, #3d543c 0 13%, transparent 13.8%),
-                radial-gradient(ellipse at 72% 41%, #667052 0 12%, transparent 12.8%),
-                radial-gradient(ellipse at 35% 58%, #3d543c 0 16%, transparent 16.8%),
-                radial-gradient(ellipse at 71% 78%, #667052 0 15%, transparent 15.8%),
-                linear-gradient(73deg, transparent 49%, rgba(135,150,108,.68) 49.3% 50.7%, transparent 51%);
-            transform: rotate(-11deg);
-            pointer-events: none;
-        }
-
         [data-testid="stSidebar"] > div {
             position: relative;
             z-index: 1;
