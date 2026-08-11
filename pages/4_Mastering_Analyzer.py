@@ -4,6 +4,7 @@ import tempfile
 import streamlit as st
 
 from analytics import track_event, track_page_view
+from component_keys import safe_component_key
 from mastering_analysis import (
     MasteringAnalysisError,
     MasteringMetrics,
@@ -479,12 +480,24 @@ if analysis_mode == "Compare with reference":
                 track_rms=track_metrics.rms_level_dbfs,
                 volume_matched=volume_match,
                 audio_id=(
-                    f"{reference_file.name}:{reference_file.size}:"
-                    f"{track_file.name}:{track_file.size}:{volume_match}"
+                    safe_component_key(
+                        "mastering-ab-audio",
+                        reference_file.name,
+                        reference_file.size,
+                        track_file.name,
+                        track_file.size,
+                        volume_match,
+                    )
                 ),
                 key=(
-                    f"mastering_ab_v2_{reference_file.name}_{reference_file.size}_"
-                    f"{track_file.name}_{track_file.size}_{volume_match}"
+                    safe_component_key(
+                        "mastering-ab-v2",
+                        reference_file.name,
+                        reference_file.size,
+                        track_file.name,
+                        track_file.size,
+                        volume_match,
+                    )
                 ),
             )
 
@@ -528,8 +541,16 @@ if audio_file is not None:
     live_mastering_monitor(
         audio_data,
         audio_mime_type(audio_file.name),
-        audio_id=f"{audio_file.name}:{audio_file.size}",
-        key=f"mastering_live_monitor_v10_{audio_file.name}_{audio_file.size}",
+        audio_id=safe_component_key(
+            "mastering-monitor-audio",
+            audio_file.name,
+            audio_file.size,
+        ),
+        key=safe_component_key(
+            "mastering-live-monitor-v10",
+            audio_file.name,
+            audio_file.size,
+        ),
     )
 
     if st.button("ANALYZE MASTER", type="primary"):

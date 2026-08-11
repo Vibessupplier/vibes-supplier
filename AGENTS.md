@@ -114,6 +114,10 @@
   retaining an older component bundle.
 - Apply the same name/key versioning rule to the Speed Deck and Mastering
   Monitor whenever their HTML, CSS, or JavaScript changes.
+- Never place user filenames directly in Streamlit v2 component keys. Streamlit
+  reserves `__` inside bidirectional IDs, and downloaded files commonly contain
+  that sequence. Use `safe_component_key()` for any user-derived component key
+  or browser audio identity while keeping the original name visible to users.
 
 ## Current application structure
 
@@ -127,6 +131,7 @@
 - `stereo_converter.py`: product-level channel-routing and export policy.
 - `timing_calculator.py`: reusable tempo-derived delay and reverb formulas.
 - `sync_generator_component.py`: browser-side tempo clock and claquette.
+- `component_keys.py`: deterministic filename-safe Streamlit component keys.
 - `speed_player_component.py`: browser-side live Speed Changer deck and analog
   pitch controls.
 - `mastering_analysis.py`: loudness, stereo, and static spectral analysis.
@@ -268,7 +273,10 @@
   views plus explicit feedback submissions. Analytics must remain optional and
   must never receive audio, filenames, raw cookies, or location data.
 - The public feedback contact is `vibes.supplier@gmail.com`.
-- The current automated suite contains 79 tests and passes with
+- Mastering Monitor, Mastering A/B, and Speed Deck use hashed internal audio
+  identities so filenames containing `__`, Unicode, emoji, or punctuation never
+  enter Streamlit v2 IDs. Audio Chopper already uses fixed component keys.
+- The current automated suite contains 82 tests and passes with
   `.venv/bin/python -m unittest discover -s tests -q`. The local virtual
   environment does not currently include pytest.
 
@@ -278,5 +286,5 @@
    subdivisions, and 4/8/16/32-step layout on desktop and mobile.
 2. Choose one focused increment: universal format conversion, Audio Chopper
    drag-to-pan, or a new producer utility.
-3. Keep the increment small, run the 79-test suite, syntax and diff checks, then
+3. Keep the increment small, run the 82-test suite, syntax and diff checks, then
    wait for explicit product-owner approval before committing or pushing.

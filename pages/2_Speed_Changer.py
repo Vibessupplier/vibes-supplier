@@ -4,6 +4,7 @@ import tempfile
 import streamlit as st
 
 from analytics import track_event, track_page_view
+from component_keys import safe_component_key
 from audio_analysis import detect_bpm_from_file
 from audio_effects import (
     create_speed_player_audio,
@@ -121,7 +122,11 @@ if audio_file is not None:
 
     live_speed_player(
         st.session_state["speed_browser_audio"],
-        audio_id=f"{audio_file.name}:{audio_file.size}",
+        audio_id=safe_component_key(
+            "speed-player-audio",
+            audio_file.name,
+            audio_file.size,
+        ),
         settings=st.session_state["speed_live_settings"],
         key=SPEED_PLAYER_KEY,
         on_preview_change=lambda: capture_speed_action("preview"),
