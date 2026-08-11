@@ -95,7 +95,9 @@
   and all final exports remain authoritative on Python/FFmpeg. New uploads must
   start with Target BPM equal to detected Original BPM at `1.000×`; correcting
   Original BPM should also restore neutral speed. Monitor Level and Mute affect
-  browser listening only and must never enter preview or export settings.
+  browser listening only and must never enter preview or export settings. The
+  v3 deck locks Original BPM by default; Reset to Detected BPM restores the
+  initial detection, Target BPM, `1.000×`, Follow Speed, and zero custom pitch.
 - Keep product analytics centralized and optional. Never send uploaded audio,
   filenames, raw cookies, IP addresses, or other unnecessary personal data.
 - Keep public feedback account-free and rate-limited. Submit only the category,
@@ -254,10 +256,11 @@
   fixed height is 390 px so its waveform, fade selector, Monitor Level, and
   accessible navigation controls are not clipped on Streamlit Cloud. The LCD
   Sample Memory uses its own v1 component name/key.
-- The Speed Changer Live Deck currently uses the v2 component name/key. It
+- The Speed Changer Live Deck currently uses the v3 component name/key. It
   starts at the detected BPM and `1.000×`, resets Target BPM to a manually
-  corrected Original BPM, and includes listening-only Monitor Level/Mute that
-  cannot affect preview or export processing.
+  corrected Original BPM, locks Original BPM against accidental edits, restores
+  all neutral detected settings on reset, and includes listening-only Monitor
+  Level/Mute that cannot affect preview or export processing.
 - The Mastering Monitor currently uses the v10 component name/key. Its live
   spectrum and vectorscope remain fluid while the user selects Steady,
   Balanced, or Fast meter response. Its Peak/RMS meters use restrained black
@@ -276,7 +279,7 @@
 - Mastering Monitor, Mastering A/B, and Speed Deck use hashed internal audio
   identities so filenames containing `__`, Unicode, emoji, or punctuation never
   enter Streamlit v2 IDs. Audio Chopper already uses fixed component keys.
-- The current automated suite contains 82 tests and passes with
+- The current automated suite contains 84 tests and passes with
   `.venv/bin/python -m unittest discover -s tests -q`. The local virtual
   environment does not currently include pytest.
 
@@ -286,5 +289,5 @@
    subdivisions, and 4/8/16/32-step layout on desktop and mobile.
 2. Choose one focused increment: universal format conversion, Audio Chopper
    drag-to-pan, or a new producer utility.
-3. Keep the increment small, run the 82-test suite, syntax and diff checks, then
+3. Keep the increment small, run the 84-test suite, syntax and diff checks, then
    wait for explicit product-owner approval before committing or pushing.

@@ -17,7 +17,7 @@ from speed_player_component import initial_speed_deck_settings, live_speed_playe
 from ui import show_header, show_tool_header
 
 
-SPEED_PLAYER_KEY = "speed_live_player_v2"
+SPEED_PLAYER_KEY = "speed_live_player_v3"
 PENDING_ACTION_KEY = "speed_pending_action"
 
 
@@ -111,6 +111,14 @@ if audio_file is not None:
             pending_action = None
         else:
             st.session_state["speed_live_settings"] = {
+                "detected_bpm": float(
+                    submitted.get(
+                        "detected_bpm",
+                        st.session_state["speed_live_settings"].get(
+                            "detected_bpm", resolved_settings.source_bpm
+                        ),
+                    )
+                ),
                 "source_bpm": resolved_settings.source_bpm,
                 "target_bpm": resolved_settings.target_bpm,
                 "pitch_mode": resolved_settings.pitch_mode,
@@ -131,6 +139,7 @@ if audio_file is not None:
         key=SPEED_PLAYER_KEY,
         on_preview_change=lambda: capture_speed_action("preview"),
         on_process_change=lambda: capture_speed_action("process"),
+        on_reset_change=lambda: capture_speed_action("reset"),
     )
 
     if pending_action is not None and resolved_settings is not None:
@@ -162,6 +171,10 @@ if audio_file is not None:
                     except (AudioProcessingError, OSError) as error:
                         st.error("The custom pitch preview could not be created.")
                         st.code(str(error))
+
+        elif pending_action["action"] == "reset":
+            st.session_state.pop("speed_preview", None)
+            st.session_state.pop("speed_result", None)
 
         elif pending_action["action"] == "process":
             st.session_state.pop("speed_preview", None)

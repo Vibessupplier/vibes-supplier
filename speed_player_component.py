@@ -24,8 +24,9 @@ SPEED_PLAYER_HTML = """
     </div>
     <div class="control-grid">
         <div class="control-block bpm-source">
-            <label for="source-bpm">ORIGINAL BPM</label>
+            <div class="source-heading"><label for="source-bpm">ORIGINAL BPM</label><button type="button" class="bpm-lock" data-action="bpm-lock" aria-pressed="true">▣ LOCKED</button></div>
             <input id="source-bpm" type="number" min="40" max="250" step="0.1" />
+            <button type="button" class="bpm-reset" data-action="bpm-reset">↺ RESET TO DETECTED BPM</button>
         </div>
         <div class="control-block bpm-target">
             <label for="target-bpm">TARGET BPM <strong class="target-readout"></strong></label>
@@ -85,7 +86,9 @@ button,input { font:inherit; }
 .control-grid { display:grid; grid-template-columns:145px 1fr; gap:10px; }
 .control-block { padding:11px; border:1px solid rgba(216,201,167,.17); background:rgba(28,40,30,.82); box-shadow:inset 0 0 0 2px rgba(0,0,0,.12); }
 .control-block label { display:flex; justify-content:space-between; margin-bottom:8px; color:#d8c9a7; font:600 10px SFMono-Regular,Menlo,monospace; letter-spacing:.10em; }
+.source-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.source-heading label{margin:0}.source-heading .bpm-lock{min-height:25px;padding:0 7px;border:1px solid rgba(216,201,167,.24);border-radius:2px;background:#182019;color:#87966c;font:700 7px SFMono-Regular,Menlo,monospace;letter-spacing:.06em;cursor:pointer}.source-heading .bpm-lock.unlocked{border-color:#d99a45;color:#d99a45}.bpm-reset{width:100%;min-height:27px;margin-top:7px;border:1px solid rgba(216,201,167,.18);border-radius:2px;background:rgba(48,37,27,.45);color:rgba(216,201,167,.68);font:700 7px SFMono-Regular,Menlo,monospace;letter-spacing:.06em;cursor:pointer}.bpm-reset:hover{border-color:#d99a45;color:#eee3c7}
 #source-bpm { box-sizing:border-box; width:100%; height:37px; border:1px solid rgba(216,201,167,.26); border-radius:2px; background:#171815; color:#d99a45; font:600 16px SFMono-Regular,Menlo,monospace; padding:0 9px; }
+#source-bpm:disabled{cursor:not-allowed;color:rgba(217,154,69,.65);border-color:rgba(216,201,167,.13);background:#111510;opacity:1}
 #target-bpm { width:100%; accent-color:#d99a45; cursor:pointer; }
 .target-readout { color:#d99a45; font-family:SFMono-Regular,Menlo,monospace; }
 .range-scale { display:flex; justify-content:space-between; color:rgba(216,201,167,.48); font:500 9px SFMono-Regular,Menlo,monospace; }
@@ -144,11 +147,13 @@ export default function(component) {
         state = {
             audioId: data.audio_id,
             sourceBpm: Number(data.settings.source_bpm),
+            detectedBpm: Number(data.settings.detected_bpm ?? data.settings.source_bpm),
             targetBpm: Number(data.settings.target_bpm),
             mode: data.settings.pitch_mode,
             pitch: Number(data.settings.pitch_semitones || 0),
             monitorDb: 0,
             muted: false,
+            sourceLocked: true,
             peaks: null,
             animationFrame: null,
         };
@@ -199,7 +204,7 @@ export default function(component) {
         return state.pitch;
     }
     function payload() {
-        return {source_bpm:state.sourceBpm,target_bpm:state.targetBpm,pitch_mode:state.mode,pitch_semitones:state.pitch};
+        return {source_bpm:state.sourceBpm,detected_bpm:state.detectedBpm,target_bpm:state.targetBpm,pitch_mode:state.mode,pitch_semitones:state.pitch};
     }
 
     function updateControls() {
@@ -209,6 +214,8 @@ export default function(component) {
         state.targetBpm = clamp(Number(state.targetBpm) || state.sourceBpm, minimum, maximum);
         state.pitch = Math.round(clamp(Number(state.pitch) || 0, -12, 12) * 2) / 2;
         sourceInput.value = state.sourceBpm.toFixed(1);
+        sourceInput.disabled = state.sourceLocked;
+        const lockButton=q('[data-action="bpm-lock"]');lockButton.classList.toggle('unlocked',!state.sourceLocked);lockButton.setAttribute('aria-pressed',String(state.sourceLocked));lockButton.textContent=state.sourceLocked?'▣ LOCKED':'□ UNLOCKED';
         targetInput.min = minimum; targetInput.max = maximum; targetInput.value = state.targetBpm;
         targetReadout.textContent = `${state.targetBpm.toFixed(1)} BPM`;
         minReadout.textContent = minimum.toFixed(1); maxReadout.textContent = maximum.toFixed(1);
@@ -252,7 +259,9 @@ export default function(component) {
     q('[data-action="stop"]').onclick=()=>{ audio.pause(); if(state.animationFrame)cancelAnimationFrame(state.animationFrame); state.animationFrame=null; draw(); };
     audio.onended=()=>{ state.animationFrame=null; draw(); };
     canvas.onclick=event=>{ if(!audio.duration)return; const box=canvas.getBoundingClientRect(); audio.currentTime=clamp((event.clientX-box.left)/box.width,0,1)*audio.duration; draw(); };
-    sourceInput.onchange=()=>{ state.sourceBpm=Number(sourceInput.value); state.targetBpm=state.sourceBpm; updateControls(); };
+    q('[data-action="bpm-lock"]').onclick=()=>{state.sourceLocked=!state.sourceLocked;updateControls();if(!state.sourceLocked)sourceInput.focus()};
+    q('[data-action="bpm-reset"]').onclick=()=>{state.sourceBpm=state.detectedBpm;state.targetBpm=state.detectedBpm;state.mode='Follow speed';state.pitch=0;updateControls();setTriggerValue('reset',payload())};
+    sourceInput.onchange=()=>{ if(state.sourceLocked)return;state.sourceBpm=Number(sourceInput.value); state.targetBpm=state.sourceBpm; updateControls(); };
     targetInput.oninput=()=>{ state.targetBpm=Number(targetInput.value); updateControls(); };
     modeButtons.forEach(button=>button.onclick=()=>{ state.mode=button.dataset.mode; updateControls(); });
 
@@ -275,7 +284,7 @@ export default function(component) {
 
 
 _speed_player = st.components.v2.component(
-    "vibes_supplier_speed_player_v2",
+    "vibes_supplier_speed_player_v3",
     html=SPEED_PLAYER_HTML,
     css=SPEED_PLAYER_CSS,
     js=SPEED_PLAYER_JS,
@@ -286,6 +295,7 @@ def initial_speed_deck_settings(detected_bpm: float) -> dict[str, Any]:
     """Start live audition at the detected tempo without changing the audio."""
     source_bpm = round(float(detected_bpm), 1)
     return {
+        "detected_bpm": source_bpm,
         "source_bpm": source_bpm,
         "target_bpm": source_bpm,
         "pitch_mode": "Follow speed",
@@ -301,6 +311,7 @@ def live_speed_player(
     key: str,
     on_preview_change: Callable[[], None],
     on_process_change: Callable[[], None],
+    on_reset_change: Callable[[], None],
 ) -> Any:
     """Render the live Speed Changer deck and return its trigger state."""
     return _speed_player(
@@ -311,7 +322,8 @@ def live_speed_player(
             "audio_id": audio_id,
             "settings": settings,
         },
-        height=630,
+        height=665,
         on_preview_change=on_preview_change,
         on_process_change=on_process_change,
+        on_reset_change=on_reset_change,
     )

@@ -39,8 +39,8 @@
 - [x] Listening-only Speed Deck Monitor Level and Mute
 - [x] Audition Follow Speed and Keep Original Pitch without server previews
 - [x] Accessible analog Custom Pitch knob
-- [ ] Lock Original BPM by default with an explicit unlock control for corrections
-- [ ] Add Reset to Original BPM to restore the initially detected BPM, neutral
+- [x] Lock Original BPM by default with an explicit unlock control for corrections
+- [x] Add Reset to Detected BPM to restore the initially detected BPM, neutral
   `1.000×` speed, and Target BPM equal to Original BPM
 
 ---
