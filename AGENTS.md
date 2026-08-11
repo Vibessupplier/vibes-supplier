@@ -60,6 +60,10 @@
   validation, bitrate policy, splitting, interleaving, and silence-padding in
   reusable engine/product modules rather than the page. WAV is the lossless
   option; MP3 Match Source must not claim that a higher bitrate restores quality.
+- Audio Format Converter is a focused Transform tool backed by
+  `format_converter.py` and the shared FFmpeg engine. It supports MP3, WAV PCM,
+  FLAC, M4A/AAC, and ALAC. Match Source must preserve sample rate where possible;
+  upsampling or a higher lossy bitrate must never be presented as restored quality.
 - Delay & Reverb Calculator is an instant TOOLS utility with no upload or server
   audio processing. Keep timing formulas in `timing_calculator.py`; the v3 Sync
   Generator owns browser audio, Tap Tempo, BPM gestures, subdivisions, and its
@@ -131,6 +135,7 @@
 - `waveform_component.py`: browser-side interactive waveform and playback.
 - `sample_tray_component.py`: compact browser-side four-slot Sample Memory.
 - `stereo_converter.py`: product-level channel-routing and export policy.
+- `format_converter.py`: product-level codec, bitrate, depth, and sample-rate policy.
 - `timing_calculator.py`: reusable tempo-derived delay and reverb formulas.
 - `sync_generator_component.py`: browser-side tempo clock and claquette.
 - `component_keys.py`: deterministic filename-safe Streamlit component keys.
@@ -204,6 +209,10 @@
   L Mono + R Mono → Stereo flows. It supports WAV/MP3, Match Source plus
   128/192/256/320 kbps, Swap L/R, visible silence-padding behavior, result
   monitoring, separate/ZIP downloads, and a restrained analog patch-bay diagram.
+- Audio Format Converter provides Source Reel → Format Matrix → Output Reel
+  conversion for MP3, WAV, FLAC, M4A/AAC, and ALAC. It exposes Match Source,
+  128/192/256/320 kbps, 16/24/32-bit WAV, supported studio sample rates, preview,
+  and download while explaining lossy re-encoding and upsampling limitations.
 - The Mastering Analyzer now provides LUFS, dBFS/true peak, dynamics, stereo
   measurements, mono compatibility, A/B reference comparison, Volume Match,
   static spectral balance, and a live single-master Web Audio monitor. The live
@@ -229,8 +238,8 @@
 
 - Public navigation is grouped into HOME, ANALYZE, TRANSFORM, SEPARATE, TOOLS,
   and SUPPORT. The live tools are Key & BPM Finder, Speed Changer, Mastering
-  Analyzer, Audio Chopper, Stereo / Mono Converter, Delay & Reverb Calculator,
-  and Feedback.
+  Analyzer, Audio Chopper, Stereo / Mono Converter, Audio Format Converter,
+  Delay & Reverb Calculator, and Feedback.
 - The shared visual direction is **Jungle Analog**: a sophisticated analog audio
   laboratory hidden in a humid jungle around 1975–1985. Use Jungle Night/Deep
   Forest, walnut, oxidized metal, Old Paper/Warm Cream, olive/moss, and VU Amber.
@@ -279,7 +288,7 @@
 - Mastering Monitor, Mastering A/B, and Speed Deck use hashed internal audio
   identities so filenames containing `__`, Unicode, emoji, or punctuation never
   enter Streamlit v2 IDs. Audio Chopper already uses fixed component keys.
-- The current automated suite contains 84 tests and passes with
+- The current automated suite contains 89 tests and passes with
   `.venv/bin/python -m unittest discover -s tests -q`. The local virtual
   environment does not currently include pytest.
 
@@ -287,7 +296,6 @@
 
 1. Verify the deployed Delay & Reverb Calculator timing, BPM gestures, click
    subdivisions, and 4/8/16/32-step layout on desktop and mobile.
-2. Choose one focused increment: universal format conversion, Audio Chopper
-   drag-to-pan, or a new producer utility.
-3. Keep the increment small, run the 84-test suite, syntax and diff checks, then
+2. Choose one focused increment: Audio Chopper drag-to-pan or a new producer utility.
+3. Keep the increment small, run the 89-test suite, syntax and diff checks, then
    wait for explicit product-owner approval before committing or pushing.

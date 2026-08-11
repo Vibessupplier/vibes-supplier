@@ -188,6 +188,50 @@ def merge_mono_channels(
     return output_path
 
 
+def encode_audio_file(
+    input_path: Path,
+    output_path: Path,
+    codec: str,
+    *,
+    bitrate_kbps: int | None = None,
+    sample_rate: int | None = None,
+) -> Path:
+    """Encode the first audio stream with validated output settings."""
+    input_path = Path(input_path)
+    output_path = Path(output_path)
+    if not input_path.is_file():
+        raise AudioProcessingError(f"Input audio does not exist: {input_path}")
+    allowed_codecs = {
+        "libmp3lame", "aac", "alac", "flac", "pcm_s16le", "pcm_s24le", "pcm_s32le"
+    }
+    if codec not in allowed_codecs:
+        raise AudioProcessingError("Unsupported output codec.")
+    if bitrate_kbps is not None:
+        if codec not in {"libmp3lame", "aac"}:
+            raise AudioProcessingError("Bitrate applies only to MP3 or AAC output.")
+        if bitrate_kbps not in {128, 192, 256, 320}:
+            raise AudioProcessingError("Bitrate must be 128, 192, 256, or 320 kbps.")
+    if sample_rate is not None and not 8000 <= sample_rate <= 192000:
+        raise AudioProcessingError("Output sample rate must be between 8 and 192 kHz.")
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    command = [
+        _ffmpeg_executable(), "-hide_banner", "-loglevel", "error", "-y",
+        "-i", str(input_path), "-map", "0:a:0", "-vn", "-c:a", codec,
+    ]
+    if bitrate_kbps is not None:
+        command.extend(["-b:a", f"{bitrate_kbps}k"])
+    if sample_rate is not None:
+        command.extend(["-ar", str(sample_rate)])
+    if codec == "flac":
+        command.extend(["-compression_level", "8"])
+    if codec == "aac" and output_path.suffix.lower() == ".m4a":
+        command.extend(["-movflags", "+faststart"])
+    command.append(str(output_path))
+    _run_ffmpeg(command)
+    return output_path
+
+
 def analyze_audio_filter(input_path: Path, audio_filter: str) -> str:
     """Run a read-only FFmpeg audio filter and return its diagnostic output."""
     input_path = Path(input_path)

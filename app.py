@@ -48,6 +48,11 @@ pages = {
             title="Stereo / Mono Converter",
             url_path="stereo-mono-converter",
         ),
+        st.Page(
+            "pages/9_Audio_Format_Converter.py",
+            title="Audio Format Converter",
+            url_path="audio-format-converter",
+        ),
     ],
     "SEPARATE": [
         st.Page(

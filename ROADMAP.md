@@ -143,7 +143,9 @@
 - [x] Warn clearly when lossy formats require re-encoding
 - [x] Preview L/R routing, swap channel assignment, and download split files together
 - [x] Handle unequal mono durations explicitly, with visible silence-padding behavior
-- [ ] Universal audio format converter for WAV, MP3, FLAC, M4A, and additional formats
+- [x] Audio Format Converter for MP3, WAV, FLAC, M4A/AAC, and Apple Lossless ALAC
+- [x] Match Source plus explicit lossy bitrate, WAV bit-depth, and sample-rate controls
+- [x] Honest quality warnings for lossy re-encoding, upsampling, and lossless containers
 - [ ] Multi-stem separation (vocals, drums, bass, and other)
 - [ ] Spectrogram
 - [ ] AI Mix Assistant
@@ -178,6 +180,7 @@
 - [ ] Validate Jungle Analog initial loading and embedded artwork on Streamlit Cloud
 - [ ] Test the complete public flow on desktop and mobile
 - [ ] Validate Stereo / Mono Converter routing, formats, ZIP, and patch-bay layout online
+- [ ] Validate Audio Format Converter outputs and downloads online across all five formats
 - [ ] Add Audio Chopper direct drag-to-pan navigation
 - [ ] Validate Delay & Reverb Calculator timing, controls, and mobile layout online
 - [ ] Validate the synchronized A/B deck on desktop Edge and mobile browsers
@@ -188,8 +191,8 @@
 ## Current Public Beta State
 
 - Home, Key & BPM Finder, Speed Changer, Mastering Analyzer, Audio Chopper,
-  Stereo / Mono Converter, Delay & Reverb Calculator, and Feedback are
-  available through the sidebar.
+  Stereo / Mono Converter, Audio Format Converter, Delay & Reverb Calculator,
+  and Feedback are available through the sidebar.
 - Vocal Split works with a high-quality private Modal/Demucs pipeline, but its
   public processing action is intentionally disabled while cost and access
   controls are designed.
@@ -201,6 +204,9 @@
   interleaves two mono sources as stereo. It supports WAV and MP3, Match Source
   bitrate, advanced MP3 bitrates, Swap L/R, silence-padding for unequal lengths,
   individual/ZIP downloads, and a Jungle Analog routing patch bay.
+- Audio Format Converter supports MP3, WAV PCM, FLAC, M4A/AAC, and ALAC with
+  Match Source, explicit bitrates, WAV depth, sample-rate conversion, preview,
+  download, and clear warnings against false quality improvement.
 - Delay & Reverb Calculator adds the TOOLS group and works without uploads. Its
   browser-side VS Sync Generator has editable BPM, Tap Tempo, 4/8/16/32-step
   cycles, detailed straight/dotted/triplet audition, and tempo-derived reverb
